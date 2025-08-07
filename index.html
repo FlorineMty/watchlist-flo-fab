@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Watchlist des Flammes Jum</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f6f3;
+      --card: #ffffff;
+      --text: #222;
+      --subtext: #666;
+      --accent: #d5c5a4;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      text-align: center;
+      padding: 40px 20px 20px;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      margin: 0;
+    }
+
+    header p {
+      font-size: 1rem;
+      color: var(--subtext);
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: 30px auto;
+    }
+
+    input[type="text"], select {
+      padding: 12px;
+      width: 320px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: var(--accent);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .film-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 30px;
+    }
+
+    .film {
+      background: var(--card);
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      width: 200px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .film.watched {
+      opacity: 0.6;
+      text-decoration: line-through;
+    }
+
+    .film input[type="checkbox"] {
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.85rem;
+      color: var(--subtext);
+    }
+
+    .share-link {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .share-link input {
+      width: 80%;
+      padding: 6px;
+      font-size: 0.9rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🎬 Watchlist des Flammes Jum</h1>
+    <p>Go ajouter nos best navets</p>
+  </header>
+
+  <form id="filmForm">
+    <input type="text" id="filmInput" placeholder="Titre du film..." required />
+    <select id="addedBy" required>
+      <option value="">Qui l'ajoute ?</option>
+      <option value="Florine">Flo</option>
+      <option value="Fabien">Fab</option>
+    </select>
+    <button type="submit">Ajouter</button>
+  </form>
+
+  <div class="share-link">
+    <p>💌 Partage ce lien avec Fabien :</p>
+    <input type="text" id="shareURL" readonly />
+  </div>
+
+  <div class="film-list" id="filmList"></div>
+
+  <footer>
+    Sei qualcos'altro – sans base pour le moment, mais avec ❤️
+  </footer>
+
+  <script>
+    const filmForm = document.getElementById('filmForm');
+    const filmInput = document.getElementById('filmInput');
+    const addedBySelect = document.getElementById('addedBy');
+    const filmList = document.getElementById('filmList');
+    const shareURL = document.getElementById('shareURL');
+
+    let films = [];
+
+    // Charger films depuis URL (si présent)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('data')) {
+      try {
+        const decoded = atob(urlParams.get('data'));
+        films = JSON.parse(decoded);
+      } catch (e) {
+        console.error("Erreur de décodage du lien partagé");
+      }
+    }
+
+    function updateShareLink() {
+      const encoded = btoa(JSON.stringify(films));
+      const url = `${location.origin}${location.pathname}?data=${encoded}`;
+      shareURL.value = url;
+    }
+
+    filmForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = filmInput.value.trim();
+      const addedBy = addedBySelect.value;
+
+      if (title && addedBy) {
+        films.push({ title, addedBy, watched: false });
+        displayFilms();
+        updateShareLink();
+        filmInput.value = '';
+        addedBySelect.value = '';
+      }
+    });
+
+    function toggleWatched(index) {
+      films[index].watched = !films[index].watched;
+      displayFilms();
+      updateShareLink();
+    }
+
+    function displayFilms() {
+      filmList.innerHTML = '';
+      films.forEach((film, index) => {
+        const div = document.createElement('div');
+        div.className = 'film' + (film.watched ? ' watched' : '');
+        div.innerHTML = `
+          <p><strong>${film.title}</strong></p>
+          <p>Ajouté par : ${film.addedBy}</p>
+          <label>
+            <input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${index})" />
+            Vu
+          </label>
+        `;
+        filmList.appendChild(div);
+      });
+    }
+
+    displayFilms();
+    updateShareLink();
+  </script>
+</body>
+</html>
