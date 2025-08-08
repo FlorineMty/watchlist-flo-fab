@@ -301,6 +301,12 @@ function showApp(name) {
     }
   }
 
+  const filmForm = document.getElementById('filmForm');
+  const filmInput = document.getElementById('filmInput');
+  const noteInput = document.getElementById('noteInput');
+  const loader = document.getElementById('loader');
+  const addedBySelect = document.getElementById('addedBy');
+  
   filmForm.addEventListener('submit', (e) => {
     e.preventDefault();
     if (isGuest) return;
