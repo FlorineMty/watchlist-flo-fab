@@ -190,6 +190,7 @@
         const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
         const data = await res.json();
         const poster = data.Poster && data.Poster !== "N/A" ? data.Poster : '';
+        const director = data.Director && data.Director !== "N/A" ? data.Director : 'Inconnu';
         films.push({ title, addedBy, watched: false, poster });
         sortAndDisplayFilms();
         updateShareLink();
