@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎬 Watchlist Firebase</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #f8f6f3, #f2ede7); margin: 0; color: #222; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 24px 40px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    header h1 { margin: 0; font-size: 1.8rem; }
+    .main { padding: 20px 40px; }
+    #filmForm { max-width: 600px; margin: 20px auto; text-align: center; }
+    #filmForm input, #filmForm button, select { padding: 10px; margin: 5px; border-radius: 8px; border: 1px solid #ccc; }
+    #filmForm button { background: #3478f6; color: white; border: none; cursor: pointer; }
+    #filters { max-width: 600px; margin: 0 auto; text-align: center; padding: 10px 0; }
+    #filmGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
+    .film-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; position: relative; }
+    .film-card img { width: 100%; border-radius: 8px; object-fit: cover; }
+    .film-card h3 { margin: 10px 0 5px; }
+    .film-card p { margin: 4px 0; font-size: 0.9rem; }
+    .film-card button { background: none; border: none; font-size: 1.2rem; cursor: pointer; position: absolute; top: 10px; right: 10px; }
+    .status-toggle { margin-top: 8px; }
+    #googleSignInBtn { display: flex; justify-content: center; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎬 Watchlist des Flammes Jum</h1>
+  <div id="googleSignInBtn">
+    <button id="signInBtn" style="padding:8px 16px;border-radius:8px;background:#3478f6;color:#fff;border:none;cursor:pointer;">Connexion Google</button>
+  </div>
+</header>
+
+<div class="main">
+  <form id="filmForm">
+    <input type="text" id="filmInput" placeholder="Titre du film..." required>
+    <button type="submit">Ajouter</button>
+  </form>
+
+  <div id="filters">
+    <select id="statusFilter">
+      <option value="all">Tous les statuts</option>
+      <option value="watched">Vu</option>
+      <option value="to_watch">À voir</option>
+    </select>
+    <select id="userFilter">
+      <option value="all">Tous les utilisateurs</option>
+      <option value="florine">Florine</option>
+      <option value="fabien">Fabien</option>
+    </select>
+  </div>
+
+  <div id="filmGrid"></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQClDY0C0tYyCnCQRNVh4YvDaA1kFA9RM",
+    authDomain: "watchlist-468413.firebaseapp.com",
+    databaseURL: "https://watchlist-468413-default-rtdb.firebaseio.com",
+    projectId: "watchlist-468413",
+    storageBucket: "watchlist-468413.appspot.com",
+    messagingSenderId: "753185542113",
+    appId: "1:753185542113:web:placeholder"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth();
+  const provider = new GoogleAuthProvider();
+
+  let currentUser = null;
+  let allFilms = [];
+
+  const allowedEmails = {
+    "moutoussamy.florine@gmail.com": "Florine",
+    "fabien.ogli@gmail.com": "Fabien"
+  };
+
+  document.getElementById("signInBtn").addEventListener("click", () => {
+    signInWithPopup(auth, provider).then(result => {
+      const email = result.user.email;
+      if (!allowedEmails[email]) {
+        alert("❌ Accès réservé à Florine et Fabien.");
+        return;
+      }
+      currentUser = result.user;
+      alert("Connecté : " + email);
+    });
+  });
+
+  document.getElementById("filmForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const title = document.getElementById("filmInput").value.trim();
+    if (!currentUser || !allowedEmails[currentUser.email]) return alert("Connexion requise.");
+    const res = await fetch(`https://www.omdbapi.com/?apikey=d380a270&t=${encodeURIComponent(title)}`);
+    const data = await res.json();
+    if (data.Response === "False") return alert("Film non trouvé.");
+    const film = {
+      title: data.Title,
+      director: data.Director || "Inconnu",
+      imdbRating: data.imdbRating || "N/A",
+      poster: data.Poster !== "N/A" ? data.Poster : "",
+      addedBy: currentUser.email,
+      status: "to_watch"
+    };
+    push(ref(db, "films"), film);
+    document.getElementById("filmInput").value = '';
+  });
+
+  function renderFilmGrid(snapshot) {
+    const grid = document.getElementById("filmGrid");
+    grid.innerHTML = '';
+    const statusFilter = document.getElementById("statusFilter").value;
+    const userFilter = document.getElementById("userFilter").value;
+    snapshot.forEach(child => {
+      const film = child.val();
+      const key = child.key;
+      const addedName = allowedEmails[film.addedBy] || "Inconnu";
+
+      const statusMatch = statusFilter === "all" || film.status === statusFilter;
+      const userMatch = userFilter === "all" || userFilter === addedName.toLowerCase();
+
+      if (statusMatch && userMatch) {
+        const div = document.createElement("div");
+        div.className = "film-card";
+        div.innerHTML = `
+          <img src="${film.poster}" alt="Affiche">
+          <h3>${film.title}</h3>
+          <p>🎬 ${film.director}</p>
+          <p>⭐ IMDb : ${film.imdbRating}</p>
+          <p>👤 ${addedName}</p>
+          <p><strong>Statut :</strong> ${film.status === "watched" ? "✅ Vu" : "⏳ À voir"}</p>
+          <div class="status-toggle">
+            <label>
+              <input type="checkbox" ${film.status === "watched" ? "checked" : ""} onchange="window.toggleStatus('${key}', '${film.status}')">
+              Marquer comme vu
+            </label>
+          </div>
+          <button onclick="window.deleteFilm('${key}')">🗑️</button>
+        `;
+        grid.appendChild(div);
+      }
+    });
+  }
+
+  onValue(ref(db, "films"), snapshot => {
+    allFilms = snapshot;
+    renderFilmGrid(snapshot);
+  });
+
+  window.toggleStatus = (key, currentStatus) => {
+    const newStatus = currentStatus === "watched" ? "to_watch" : "watched";
+    set(ref(db, `films/${key}/status`), newStatus);
+  };
+
+  window.deleteFilm = (key) => {
+    if (confirm("Supprimer ce film ?")) {
+      remove(ref(db, `films/${key}`));
+    }
+  };
+
+  document.getElementById("statusFilter").addEventListener("change", () => renderFilmGrid(allFilms));
+  document.getElementById("userFilter").addEventListener("change", () => renderFilmGrid(allFilms));
+</script>
+
+</body>
+</html>
