@@ -313,24 +313,6 @@ function displayFilms() {
   });
 }
 
-
-    sorted.forEach((film, index) => {
-      const div = document.createElement('div');
-      div.className = 'film';
-      div.innerHTML = `
-        ${film.poster ? `<img src="${film.poster}" alt="Affiche de ${film.title}" />` : ''}
-        <p><strong>${film.title}</strong></p>
-        <p>🎬 Réalisé par : ${film.director || 'Inconnu'}</p>
-        <p>👤 Ajouté par : ${film.addedBy}</p>
-        ${film.note ? `<p>📝 ${film.note}</p>` : ''}
-        ${!isGuest ? `
-        <label><input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${index})" /> Vu</label>
-        <button onclick="deleteFilm(${index})">Supprimer</button>` : ''}
-      `;
-      filmList.appendChild(div);
-    });
-  }
-
   function toggleWatched(index) {
     films[index].watched = !films[index].watched;
     saveToLocal();
