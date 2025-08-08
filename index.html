@@ -24,10 +24,13 @@
 
 .film.watched {
   opacity: 0.6;
-  text-decoration: line-through;
-  transition: opacity 0.3s ease;
 }
-    
+
+.film.watched p {
+  text-decoration: line-through;
+  color: #999;
+}
+
 .film.watched img {
   filter: grayscale(100%);
 }
@@ -271,14 +274,45 @@ function showApp(name) {
     if (stored) films = JSON.parse(stored);
   }
 
-  function displayFilms() {
-    filmList.innerHTML = '';
-    const sorted = [...films];
-    switch (sortSelect.value) {
-      case 'title': sorted.sort((a, b) => a.title.localeCompare(b.title)); break;
-      case 'addedBy': sorted.sort((a, b) => a.addedBy.localeCompare(b.addedBy)); break;
-      case 'watched': sorted.sort((a, b) => a.watched - b.watched); break;
-    }
+function displayFilms() {
+  filmList.innerHTML = '';
+  const sorted = [...films];
+
+  switch (sortSelect.value) {
+    case 'title':
+      sorted.sort((a, b) => a.title.localeCompare(b.title));
+      break;
+    case 'addedBy':
+      sorted.sort((a, b) => a.addedBy.localeCompare(b.addedBy));
+      break;
+    case 'watched':
+      sorted.sort((a, b) => a.watched - b.watched);
+      break;
+  }
+
+  sorted.forEach((film, index) => {
+    const div = document.createElement('div');
+    div.className = 'film' + (film.watched ? ' watched' : '');
+
+    div.innerHTML = `
+      ${film.poster ? `<img src="${film.poster}" alt="Affiche de ${film.title}" />` : ''}
+      <p><strong>${film.title}</strong></p>
+      <p>🎬 Réalisé par : ${film.director || 'Inconnu'}</p>
+      <p>👤 Ajouté par : ${film.addedBy}</p>
+      ${film.note ? `<p>📝 ${film.note}</p>` : ''}
+      ${!isGuest ? `
+        <label>
+          <input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${index})" />
+          Vu
+        </label>
+        <button onclick="deleteFilm(${index})">Supprimer</button>
+      ` : ''}
+    `;
+
+    filmList.appendChild(div);
+  });
+}
+
 
     sorted.forEach((film, index) => {
       const div = document.createElement('div');
