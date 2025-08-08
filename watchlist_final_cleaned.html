@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎬 Watchlist des Flammes Jum</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f8f6f3, #f2ede7);
+      margin: 0;
+      color: #222;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+    .main {
+      padding: 20px 40px;
+    }
+    #filmForm {
+      max-width: 600px;
+      margin: 20px auto;
+      text-align: center;
+    }
+    #filmInput {
+      padding: 10px;
+      width: 60%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    #filmForm button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #3478f6;
+      color: white;
+      cursor: pointer;
+    }
+    #filmGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    .film-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      text-align: center;
+      position: relative;
+    }
+    .film-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .film-card h3 {
+      margin: 10px 0 5px;
+    }
+    .film-card p {
+      margin: 4px 0;
+      font-size: 0.9rem;
+    }
+    .film-card button {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .status-toggle {
+      margin-top: 8px;
+    }
+    #googleSignInBtn {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎬 Watchlist des Flammes Jum</h1>
+  <div id="googleSignInBtn"></div>
+</header>
+
+<div class="main">
+  <form id="filmForm">
+    <input type="text" id="filmInput" placeholder="Titre du film..." required>
+    <button type="submit">Ajouter</button>
+  </form>
+
+  <div id="filmGrid"></div>
+</div>
+
+<script>
+  const OMDB_API_KEY = 'd380a270';
+  const ALLOWED_EMAILS = ["moutoussamy.florine@gmail.com", "fabien.ogli@gmail.com"];
+  let currentUser = null;
+  let films = JSON.parse(localStorage.getItem('films') || '[]');
+
+  function handleCredentialResponse(response) {
+    const user = parseJwt(response.credential);
+    if (!user || !ALLOWED_EMAILS.includes(user.email.toLowerCase())) {
+      alert("❌ Cet e-mail n'est pas autorisé.");
+      return;
+    }
+    currentUser = user;
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    alert("Bienvenue, " + user.name);
+  }
+
+  function parseJwt(token) {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveFilms() {
+    localStorage.setItem('films', JSON.stringify(films));
+  }
+
+  function renderFilmGrid() {
+    const container = document.getElementById('filmGrid');
+    container.innerHTML = '';
+    films.forEach((film, index) => {
+      const card = document.createElement('div');
+      card.className = 'film-card';
+      card.innerHTML = `
+        <img src="${film.poster}" alt="Affiche">
+        <h3>${film.title}</h3>
+        <p>🎬 ${film.director}</p>
+        <p>👤 ${film.addedBy}</p>
+        <p><strong>Statut :</strong> ${film.status === 'watched' ? '✅ Vu' : '⏳ À voir'}</p>
+        <div class="status-toggle">
+          <label>
+            <input type="checkbox" ${film.status === 'watched' ? 'checked' : ''} onchange="toggleWatched(${index})">
+            Marquer comme vu
+          </label>
+        </div>
+        <button onclick="deleteFilm(${index})" title="Supprimer">🗑️</button>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function deleteFilm(index) {
+    if (confirm('Supprimer ce film ?')) {
+      films.splice(index, 1);
+      saveFilms();
+      renderFilmGrid();
+    }
+  }
+
+  function toggleWatched(index) {
+    films[index].status = films[index].status === 'watched' ? 'to_watch' : 'watched';
+    saveFilms();
+    renderFilmGrid();
+  }
+
+  document.getElementById('filmForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('filmInput');
+    const title = input.value.trim();
+    const user = currentUser || JSON.parse(localStorage.getItem('currentUser') || '{}');
+    if (!user.email || !ALLOWED_EMAILS.includes(user.email.toLowerCase())) {
+      alert("❌ Seuls Florine et Fabien peuvent ajouter un film.");
+      return;
+    }
+    const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
+    const data = await res.json();
+    if (data && data.Response !== 'False') {
+      const film = {
+        title: data.Title,
+        director: data.Director || 'Inconnu',
+        poster: data.Poster !== 'N/A' ? data.Poster : '',
+        addedBy: user.email,
+        status: 'to_watch'
+      };
+      films.push(film);
+      saveFilms();
+      renderFilmGrid();
+      input.value = '';
+    } else {
+      alert("Film non trouvé.");
+    }
+  });
+
+  window.onload = function () {
+    google.accounts.id.initialize({
+      client_id: "753185542113-ec8b0nlbtn4li698ljrfq8g6mpdccap4.apps.googleusercontent.com",
+      callback: handleCredentialResponse,
+      auto_select: false,
+      ux_mode: "popup"
+    });
+
+    google.accounts.id.renderButton(
+      document.getElementById("googleSignInBtn"),
+      {
+        theme: "outline",
+        size: "large",
+        type: "standard",
+        shape: "pill"
+      }
+    );
+
+    currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    renderFilmGrid();
+  };
+</script>
+
+</body>
+</html>
