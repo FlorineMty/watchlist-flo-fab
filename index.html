@@ -238,6 +238,7 @@
         div.innerHTML = `
           ${film.poster ? `<img src="${film.poster}" alt="Affiche de ${film.title}" />` : ''}
           <p><strong>${film.title}</strong></p>
+          <p>Réalisé par : ${film.director}</p>
           <p>Ajouté par : ${film.addedBy}</p>
           <label>
             <input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${index})" /> Vu
