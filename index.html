@@ -79,6 +79,13 @@
 
 <div class="container" id="loginBox">
   <h2>Connexion à la Watchlist</h2>
+  <div class="manual-login" id="manualLoginBox">
+  <input type="email" id="manualEmail" placeholder="Entrez votre adresse e-mail"
+    style="padding:10px; width:90%; max-width:400px; margin-bottom:10px; border-radius:6px; border:1px solid #ccc;">
+  <br>
+  <button onclick="launchGooglePrompt()">Se connecter avec Google</button>
+  <p style="font-size: 0.9rem; color: #666;">Le bouton Google apparaîtra après votre choix.</p>
+</div>
   <div id="g_id_onload"
     data-client_id="753185542113-ec8b0nlbtn4li698ljrfq8g6mpdccap4.apps.googleusercontent.com"
     data-context="signin"
@@ -268,6 +275,11 @@ function showApp(name) {
   });
 
   sortSelect.addEventListener('change', displayFilms);
+
+  function launchGooglePrompt() {
+  document.getElementById("manualLoginBox").style.display = "none";
+  google.accounts.id.prompt(); // Force la sélection de compte
+}
 
   window.onload = function () {
     const authUser = localStorage.getItem("authUser");
