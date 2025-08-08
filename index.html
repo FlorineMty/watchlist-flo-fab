@@ -37,12 +37,12 @@
       color: var(--subtext);
     }
 
-    form {
+    form, .controls {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 10px;
-      margin: 30px auto;
+      margin: 20px auto;
     }
 
     input[type="text"], select {
@@ -81,6 +81,12 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
+    .film img {
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
+
     .film.watched {
       opacity: 0.6;
       text-decoration: line-through;
@@ -91,30 +97,21 @@
       cursor: pointer;
     }
 
+    #loader {
+      text-align: center;
+      font-size: 1rem;
+      color: var(--subtext);
+      padding: 10px;
+    }
+
     footer {
       text-align: center;
       padding: 20px;
       font-size: 0.85rem;
       color: var(--subtext);
     }
-
-    .share-link {
-      margin-top: 10px;
-      font-size: 0.9rem;
-      text-align: center;
-    }
-
-    .share-link input {
-      width: 80%;
-      padding: 6px;
-      font-size: 0.9rem;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      margin-top: 5px;
-    }
   </style>
 </head>
-
 <body>
   <header>
     <h1>🎬 Watchlist des Flammes Jum</h1>
@@ -131,6 +128,17 @@
     <button type="submit">Ajouter</button>
   </form>
 
+  <div class="controls">
+    <label for="sortSelect">Trier par :</label>
+    <select id="sortSelect">
+      <option value="default">Ordre d'ajout</option>
+      <option value="title">Titre</option>
+      <option value="addedBy">Ajouté par</option>
+      <option value="watched">Statut (vu / pas vu)</option>
+    </select>
+  </div>
+
+  <div id="loader"></div>
   <div class="film-list" id="filmList"></div>
 
   <footer>
@@ -138,15 +146,16 @@
   </footer>
 
   <script>
+    const OMDB_API_KEY = 'd380a270';
     const filmForm = document.getElementById('filmForm');
     const filmInput = document.getElementById('filmInput');
     const addedBySelect = document.getElementById('addedBy');
     const filmList = document.getElementById('filmList');
-    const shareURL = document.getElementById('shareURL');
+    const sortSelect = document.getElementById('sortSelect');
+    const loader = document.getElementById('loader');
 
     let films = [];
 
-    // Charger films depuis URL (si présent)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('data')) {
       try {
@@ -159,48 +168,85 @@
 
     function updateShareLink() {
       const encoded = btoa(JSON.stringify(films));
-      const url = `${location.origin}${location.pathname}?data=${encoded}`;
-      shareURL.value = url;
+      history.replaceState(null, '', `${location.pathname}?data=${encoded}`);
     }
 
-    filmForm.addEventListener('submit', (e) => {
+    function showLoader(message = 'Chargement...') {
+      loader.textContent = message;
+    }
+
+    function hideLoader() {
+      loader.textContent = '';
+    }
+
+    filmForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const title = filmInput.value.trim();
       const addedBy = addedBySelect.value;
+      if (!title || !addedBy) return;
 
-      if (title && addedBy) {
-        films.push({ title, addedBy, watched: false });
-        displayFilms();
+      showLoader('Recherche de l\'affiche...');
+      try {
+        const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
+        const data = await res.json();
+        const poster = data.Poster && data.Poster !== "N/A" ? data.Poster : '';
+        films.push({ title, addedBy, watched: false, poster });
+        sortAndDisplayFilms();
         updateShareLink();
+      } catch (error) {
+        console.error("Erreur OMDb:", error);
+        films.push({ title, addedBy, watched: false, poster: '' });
+        sortAndDisplayFilms();
+        updateShareLink();
+      } finally {
         filmInput.value = '';
         addedBySelect.value = '';
+        hideLoader();
       }
     });
 
     function toggleWatched(index) {
       films[index].watched = !films[index].watched;
-      displayFilms();
+      sortAndDisplayFilms();
       updateShareLink();
     }
 
-    function displayFilms() {
+    function sortAndDisplayFilms() {
+      const sorted = [...films];
+      switch (sortSelect.value) {
+        case 'title':
+          sorted.sort((a, b) => a.title.localeCompare(b.title));
+          break;
+        case 'addedBy':
+          sorted.sort((a, b) => a.addedBy.localeCompare(b.addedBy));
+          break;
+        case 'watched':
+          sorted.sort((a, b) => a.watched - b.watched);
+          break;
+      }
+      displayFilms(sorted);
+    }
+
+    sortSelect.addEventListener('change', sortAndDisplayFilms);
+
+    function displayFilms(filmsToDisplay) {
       filmList.innerHTML = '';
-      films.forEach((film, index) => {
+      filmsToDisplay.forEach((film, index) => {
         const div = document.createElement('div');
         div.className = 'film' + (film.watched ? ' watched' : '');
         div.innerHTML = `
+          ${film.poster ? `<img src="${film.poster}" alt="Affiche de ${film.title}" />` : ''}
           <p><strong>${film.title}</strong></p>
           <p>Ajouté par : ${film.addedBy}</p>
           <label>
-            <input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${index})" />
-            Vu
+            <input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${index})" /> Vu
           </label>
         `;
         filmList.appendChild(div);
       });
     }
 
-    displayFilms();
+    sortAndDisplayFilms();
     updateShareLink();
   </script>
 </body>
