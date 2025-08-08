@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Watchlist des Flammes Jum</title>
+  <title>🎬 Watchlist des Flammes Jum</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -12,6 +12,19 @@
       --text: #222;
       --subtext: #666;
       --accent: #d5c5a4;
+      --danger: #e74c3c;
+    }
+
+    body.dark {
+      --bg: #1e1e1e;
+      --card: #2c2c2c;
+      --text: #f0f0f0;
+      --subtext: #bbb;
+      --accent: #bb9f6b;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
@@ -19,6 +32,7 @@
       font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
+      transition: background 0.3s, color 0.3s;
     }
 
     header {
@@ -28,7 +42,7 @@
 
     header h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 2.8rem;
+      font-size: 2.5rem;
       margin: 0;
     }
 
@@ -37,118 +51,17 @@
       color: var(--subtext);
     }
 
-    form, .controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      margin: 20px auto;
-    }
-
-    input[type="text"], select {
-      padding: 12px;
-      width: 320px;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background: #fff;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      background-color: var(--accent);
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .film-list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      padding: 30px;
-    }
-
-    .film {
-      background: var(--card);
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      width: 200px;
-      padding: 15px;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .film img {
-      width: 100%;
-      height: auto;
-      border-radius: 6px;
-    }
-
-    .film.watched {
-      opacity: 0.6;
-      text-decoration: line-through;
-    }
-
-    .film input[type="checkbox"] {
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    #loader {
-      text-align: center;
-      font-size: 1rem;
-      color: var(--subtext);
-      padding: 10px;
-    }
-
-    footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 0.85rem;
-      color: var(--subtext);
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>🎬 Watchlist des Flammes Jum</h1>
-    <p>Go ajouter nos best navets</p>
-  </header>
-
-  <form id="filmForm">
-    <input type="text" id="filmInput" placeholder="Titre du film..." required />
-    <select id="addedBy" required>
-      <option value="">Qui l'ajoute ?</option>
-      <option value="Florine">Flo</option>
-      <option value="Fabien">Fab</option>
-    </select>
-    <button type="submit">Ajouter</button>
-  </form>
-
-  <div class="controls">
-    <label for="sortSelect">Trier par :</label>
-    <select id="sortSelect">
-      <option value="default">Ordre d'ajout</option>
-      <option value="title">Titre</option>
-      <option value="addedBy">Ajouté par</option>
-      <option value="watched">Statut (vu / pas vu)</option>
-    </select>
-  </div>
-
-  <div id="loader"></div>
-  <div class="film-list" id="filmList"></div>
-
+    form, .contr
   <footer>
     Sei qualcos'altro – sans base pour le moment, mais avec ❤️
   </footer>
 
   <script>
     const OMDB_API_KEY = 'd380a270';
+
     const filmForm = document.getElementById('filmForm');
     const filmInput = document.getElementById('filmInput');
+    const noteInput = document.getElementById('noteInput');
     const addedBySelect = document.getElementById('addedBy');
     const filmList = document.getElementById('filmList');
     const sortSelect = document.getElementById('sortSelect');
@@ -156,106 +69,110 @@
 
     let films = [];
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('data')) {
-      try {
-        const decoded = atob(urlParams.get('data'));
-        films = JSON.parse(decoded);
-      } catch (e) {
-        console.error("Erreur de décodage du lien partagé");
+    // 🌗 Mode sombre
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark') ? '1' : '0');
+    }
+
+    if (localStorage.getItem('darkMode') === '1') {
+      document.body.classList.add('dark');
+    }
+
+    // Sauvegarde
+    function saveToLocal() {
+      localStorage.setItem('films', JSON.stringify(films));
+      localStorage.setItem('sort', sortSelect.value);
+    }
+
+    function loadFromLocal() {
+      const data = localStorage.getItem('films');
+      const sort = localStorage.getItem('sort');
+      if (data) films = JSON.parse(data);
+      if (sort) sortSelect.value = sort;
+    }
+
+    function deleteFilm(index) {
+      const confirmed = confirm('Supprimer ce film ?');
+      if (confirmed) {
+        films.splice(index, 1);
+        saveToLocal();
+        displayFilms();
       }
     }
-
-    function updateShareLink() {
-      const encoded = btoa(JSON.stringify(films));
-      history.replaceState(null, '', `${location.pathname}?data=${encoded}`);
-    }
-
-    function showLoader(message = 'Chargement...') {
-      loader.textContent = message;
-    }
-
-    function hideLoader() {
-      loader.textContent = '';
-    }
-
-    filmForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const title = filmInput.value.trim();
-      const addedBy = addedBySelect.value;
-      if (!title || !addedBy) return;
-
-      showLoader('Recherche de l\'affiche...');
-      try {
-        const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
-        const data = await res.json();
-        const poster = data.Poster && data.Poster !== "N/A" ? data.Poster : '';
-        const director = data.Director && data.Director !== "N/A" ? data.Director : 'Inconnu';
-        films.push({ title, addedBy, watched: false, poster, director });
-        sortAndDisplayFilms();
-        updateShareLink();
-      } catch (error) {
-        console.error("Erreur OMDb:", error);
-        films.push({ title, addedBy, watched: false, poster: '' });
-        sortAndDisplayFilms();
-        updateShareLink();
-      } finally {
-        filmInput.value = '';
-        addedBySelect.value = '';
-        hideLoader();
-      }
-    });
 
     function toggleWatched(index) {
       films[index].watched = !films[index].watched;
-      sortAndDisplayFilms();
-      updateShareLink();
+      saveToLocal();
+      displayFilms();
     }
 
-    function sortAndDisplayFilms() {
-      const sorted = [...films];
+    function displayFilms() {
+      filmList.innerHTML = '';
+      let sorted = [...films];
+
       switch (sortSelect.value) {
         case 'title':
-          sorted.sort((a, b) => a.title.localeCompare(b.title));
-          break;
+          sorted.sort((a, b) => a.title.localeCompare(b.title)); break;
         case 'addedBy':
-          sorted.sort((a, b) => a.addedBy.localeCompare(b.addedBy));
-          break;
+          sorted.sort((a, b) => a.addedBy.localeCompare(b.addedBy)); break;
         case 'watched':
-          sorted.sort((a, b) => a.watched - b.watched);
-          break;
+          sorted.sort((a, b) => a.watched - b.watched); break;
       }
-      displayFilms(sorted);
-    }
 
-    sortSelect.addEventListener('change', sortAndDisplayFilms);
-
-    function displayFilms(filmsToDisplay) {
-      filmList.innerHTML = '';
-      filmsToDisplay.forEach((film, index) => {
+      sorted.forEach((film, index) => {
         const div = document.createElement('div');
         div.className = 'film' + (film.watched ? ' watched' : '');
         div.innerHTML = `
           ${film.poster ? `<img src="${film.poster}" alt="Affiche de ${film.title}" />` : ''}
           <p><strong>${film.title}</strong></p>
-          <p>Réalisé par : ${film.director}</p>
-          <p>Ajouté par : ${film.addedBy}</p>
-          <label>
-            <input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${index})" /> Vu
-          </label>
-          <button onclick="deleteFilm(${films.indexOf(film)})" style="margin-top:10px;">Supprimer</button>
+          <p>🎬 Réalisé par : ${film.director}</p>
+          <p>👤 Ajouté par : ${film.addedBy}</p>
+          ${film.note ? `<p>📝 Note : ${film.note}</p>` : ''}
+          <label><input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${films.indexOf(film)})" /> Vu</label>
+          <button onclick="deleteFilm(${films.indexOf(film)})">Supprimer</button>
         `;
         filmList.appendChild(div);
       });
     }
-    
-function deleteFilm(index) {
-  films.splice(index, 1);
-  saveFilmsToLocalStorage();
-  displayFilms();
-}
-    sortAndDisplayFilms();
-    updateShareLink();
+
+    filmForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = filmInput.value.trim();
+      const addedBy = addedBySelect.value;
+      const note = noteInput.value.trim();
+
+      if (title && addedBy) {
+        loader.style.display = 'block';
+
+        fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`)
+          .then(res => res.json())
+          .then(data => {
+            const poster = data.Poster && data.Poster !== "N/A" ? data.Poster : '';
+            const director = data.Director && data.Director !== "N/A" ? data.Director : 'Inconnu';
+            films.push({ title, addedBy, watched: false, poster, director, note });
+            saveToLocal();
+            displayFilms();
+            filmInput.value = '';
+            noteInput.value = '';
+            addedBySelect.value = '';
+          })
+          .catch(err => {
+            alert("Erreur lors de la récupération des infos du film.");
+            console.error(err);
+          })
+          .finally(() => loader.style.display = 'none');
+      }
+    });
+
+    sortSelect.addEventListener('change', () => {
+      saveToLocal();
+      displayFilms();
+    });
+
+    // Initialisation
+    loadFromLocal();
+    displayFilms();
   </script>
 </body>
 </html>
