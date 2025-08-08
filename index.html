@@ -30,7 +30,8 @@
 <header>
   <h1>🎬 Watchlist des Flammes Jum</h1>
   <div id="googleSignInBtn">
-    <button id="signInBtn" style="padding:8px 16px;border-radius:8px;background:#3478f6;color:#fff;border:none;cursor:pointer;">Connexion Google</button>
+    <button id="signInBtn">Connexion Google</button>
+    <div id="userDisplay" style="margin-top:5px; font-size: 0.9rem; color: #555;"></div>
     <button id="signOutBtn" style="padding:6px 12px; margin-top:10px; border-radius:8px; background:#eee; border:none; cursor:pointer;">Se déconnecter</button>
   </div>
 </header>
@@ -87,14 +88,14 @@ const firebaseConfig = {
 
   document.getElementById("signInBtn").addEventListener("click", () => {
     signInWithPopup(auth, provider).then(result => {
-      const email = result.user.email;
-      if (!allowedEmails[email]) {
-        alert("❌ Accès réservé à Florine et Fabien.");
-        return;
-      }
-      currentUser = result.user;
-      alert("Connecté : " + email);
-    });
+  const email = result.user.email;
+  if (!allowedEmails[email]) {
+    alert("❌ Accès réservé à Florine et Fabien.");
+    return;
+  }
+  currentUser = result.user;
+  document.getElementById("userDisplay").textContent = "Connecté en tant que : " + allowedEmails[email];
+});
   });
 
   document.getElementById("signOutBtn").addEventListener("click", () => {
