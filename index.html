@@ -12,18 +12,19 @@
       margin: 0;
       padding: 0 10px;
     }
+    
     button {
   background: #d5c5a4;
   color: #222;
   padding: 10px 20px;
-  font-weight: bold;
   border: none;
   border-radius: 8px;
   transition: background 0.2s ease, transform 0.2s ease;
 }
+    
 button:hover {
   background: #cbb897;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
     .main-card {
   background: white;
@@ -50,15 +51,16 @@ button:hover {
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
     }
-    form, select, textarea, input[type="text"] {
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-top: 8px;
-  font-size: 1rem;
+    form, select, textarea, input[type="text"], input[type="email"] {
   width: 100%;
   max-width: 500px;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  padding: 12px;
+  margin: 12px auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: block;
 }
     .film-list {
       display: flex;
@@ -68,12 +70,12 @@ button:hover {
       margin-top: 20px;
     }
     
-    .film {
+.film {
   background: #faf9f7;
-  padding: 15px;
   border-radius: 10px;
+  padding: 15px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s;
 }
 .film:hover {
   transform: translateY(-4px);
