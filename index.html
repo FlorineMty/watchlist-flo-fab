@@ -243,11 +243,17 @@
           <label>
             <input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${index})" /> Vu
           </label>
+          <button onclick="deleteFilm(${films.indexOf(film)})" style="margin-top:10px;">Supprimer</button>
         `;
         filmList.appendChild(div);
       });
     }
-
+    
+function deleteFilm(index) {
+  films.splice(index, 1);
+  saveFilmsToLocalStorage();
+  displayFilms();
+}
     sortAndDisplayFilms();
     updateShareLink();
   </script>
