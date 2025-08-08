@@ -1,265 +1,247 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🎬 Watchlist des Flammes Jum</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter&display=swap" rel="stylesheet">
+  <title>🎬 Watchlist Authentifiée</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
-    :root {
-      --bg: #f8f6f3;
-      --card: #ffffff;
-      --text: #222;
-      --subtext: #666;
-      --accent: #d5c5a4;
-      --danger: #e74c3c;
-    }
-    body.dark {
-      --bg: #1e1e1e;
-      --card: #2c2c2c;
-      --text: #f0f0f0;
-      --subtext: #bbb;
-      --accent: #bb9f6b;
-    }
-    * {
-      box-sizing: border-box;
-    }
     body {
+      font-family: sans-serif;
+      background: #f8f6f3;
       margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      transition: background 0.3s, color 0.3s;
+      padding: 0;
     }
-    header {
-      text-align: center;
-      padding: 40px 20px 20px;
-    }
-    header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.5rem;
-      margin: 0;
-    }
-    header p {
-      font-size: 1rem;
-      color: var(--subtext);
-    }
-    form, .controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      margin: 20px auto;
-      max-width: 400px;
-      width: 90%;
-    }
-    input[type="text"], select, textarea {
-      padding: 12px;
-      width: 100%;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      background-color: var(--accent);
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .dark-toggle {
-      margin-top: 10px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      color: var(--subtext);
-      text-align: center;
-    }
-    .film-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
       padding: 20px;
-      max-width: 1200px;
-      margin: auto;
-    }
-    .film {
-      background: var(--card);
-      border: 1px solid #ddd;
+      background: #fff;
       border-radius: 8px;
-      padding: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      transition: transform 0.2s;
     }
-    .film:hover {
-      transform: scale(1.02);
-    }
-    .film.watched {
-      opacity: 0.6;
-      text-decoration: line-through;
-    }
-    .film img {
+    form, select, textarea, input[type="text"] {
+      margin-top: 10px;
       width: 100%;
-      height: auto;
-      border-radius: 6px;
-      margin-bottom: 10px;
-    }
-    .film p {
-      margin: 5px 0;
-    }
-    .film button {
-      background: var(--danger);
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      margin-top: 8px;
-      cursor: pointer;
-    }
-    .loader {
-      text-align: center;
-      color: var(--subtext);
+      max-width: 500px;
       padding: 10px;
       font-size: 1rem;
     }
-    footer {
+    .film-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .film {
+      background: #eee;
+      padding: 10px;
+      border-radius: 6px;
+      width: 200px;
       text-align: center;
-      padding: 20px;
-      font-size: 0.85rem;
-      color: var(--subtext);
+    }
+    .film img {
+      max-width: 100%;
+      border-radius: 4px;
+    }
+    .hidden {
+      display: none;
+    }
+    .readonly-note {
+      font-size: 0.9rem;
+      color: #888;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🎬 Watchlist des Flammes Jum</h1>
-    <p>Go ajouter nos best navets</p>
-    <div class="dark-toggle" onclick="toggleDarkMode()">🌗</div>
-  </header>
+
+<div class="container" id="loginBox">
+  <h2>Connexion à la Watchlist</h2>
+  <div id="g_id_onload"
+    data-client_id="753185542113-ec8b0nlbtn4li698ljrfq8g6mpdccap4.apps.googleusercontent.com"
+    data-context="signin"
+    data-callback="handleCredentialResponse"
+    data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin"
+    data-type="standard"
+    data-size="large"
+    data-theme="outline"
+    data-text="sign_in_with"
+    data-shape="rectangular"
+    data-logo_alignment="left">
+  </div>
+  <p>ou</p>
+  <button onclick="enterAsGuest()">Continuer en tant qu'invité</button>
+</div>
+
+<div class="container hidden" id="appBox">
+  <h2>🎬 Watchlist des Flammes Jum</h2>
+  <p id="welcomeMessage"></p>
+  <button onclick="logout()">Se déconnecter</button>
+  <div class="readonly-note" id="guestNote">Mode invité : lecture seule</div>
+
   <form id="filmForm">
     <input type="text" id="filmInput" placeholder="Titre du film..." required />
     <select id="addedBy" required>
-      <option value="">Qui l'ajoute ?</option>
-      <option value="Florine">Flo</option>
-      <option value="Fabien">Fab</option>
+      <option value="">Ajouté par ?</option>
+      <option value="Florine">Florine</option>
+      <option value="Fabien">Fabien</option>
     </select>
-    <textarea id="noteInput" placeholder="Note personnelle (facultatif)" rows="3"></textarea>
+    <textarea id="noteInput" placeholder="Note personnelle (facultatif)"></textarea>
     <button type="submit">Ajouter</button>
   </form>
-  <div class="controls">
-    <label for="sortSelect">Trier par :</label>
-    <select id="sortSelect">
-      <option value="default">Ajout récent</option>
-      <option value="title">Titre</option>
-      <option value="addedBy">Ajouté par</option>
-      <option value="watched">Statut (vu)</option>
-    </select>
-  </div>
-  <div class="loader" id="loader">Chargement de l'affiche...</div>
+
+  <select id="sortSelect">
+    <option value="default">Tri par défaut</option>
+    <option value="title">Titre</option>
+    <option value="addedBy">Ajouté par</option>
+    <option value="watched">Vu / Non vu</option>
+  </select>
+
+  <div class="loader" id="loader">Chargement...</div>
   <div class="film-list" id="filmList"></div>
-  <footer>Credits --> Sei qualcos'altro – ❤️</footer>
-  <script>
-    const OMDB_API_KEY = 'd380a270';
-    const filmForm = document.getElementById('filmForm');
-    const filmInput = document.getElementById('filmInput');
-    const noteInput = document.getElementById('noteInput');
-    const addedBySelect = document.getElementById('addedBy');
-    const filmList = document.getElementById('filmList');
-    const sortSelect = document.getElementById('sortSelect');
-    const loader = document.getElementById('loader');
-    let films = [];
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark');
-      localStorage.setItem('darkMode', document.body.classList.contains('dark') ? '1' : '0');
+</div>
+
+<script>
+  let isGuest = false;
+  const OMDB_API_KEY = 'd380a270';
+  let films = [];
+
+  function handleCredentialResponse(response) {
+    const user = parseJwt(response.credential);
+    if (user) {
+      localStorage.setItem("authUser", JSON.stringify(user));
+      localStorage.setItem("isGuest", "0");
+      showApp(user.name || "Utilisateur");
     }
-    if (localStorage.getItem('darkMode') === '1') {
-      document.body.classList.add('dark');
-    }
-    function saveToLocal() {
-      localStorage.setItem('films', JSON.stringify(films));
-      localStorage.setItem('sort', sortSelect.value);
-    }
-    function loadFromLocal() {
-      const data = localStorage.getItem('films');
-      const sort = localStorage.getItem('sort');
-      if (data) films = JSON.parse(data);
-      if (sort) sortSelect.value = sort;
-    }
-    function deleteFilm(index) {
-      const confirmed = confirm('Supprimer ce film ?');
-      if (confirmed) {
-        films.splice(index, 1);
-        saveToLocal();
-        displayFilms();
-      }
-    }
-    function toggleWatched(index) {
-      films[index].watched = !films[index].watched;
-      saveToLocal();
-      displayFilms();
-    }
-    function displayFilms() {
-      filmList.innerHTML = '';
-      let sorted = [...films];
-      switch (sortSelect.value) {
-        case 'title': sorted.sort((a, b) => a.title.localeCompare(b.title)); break;
-        case 'addedBy': sorted.sort((a, b) => a.addedBy.localeCompare(b.addedBy)); break;
-        case 'watched': sorted.sort((a, b) => a.watched - b.watched); break;
-      }
-      sorted.forEach((film, index) => {
-        const div = document.createElement('div');
-        div.className = 'film' + (film.watched ? ' watched' : '');
-        div.innerHTML = `
-          ${film.poster ? `<img src="${film.poster}" alt="Affiche de ${film.title}" />` : ''}
-          <p><strong>${film.title}</strong></p>
-          <p>🎬 Réalisé par : ${film.director || 'Inconnu'}</p>
-          <p>👤 Ajouté par : ${film.addedBy}</p>
-          ${film.note ? `<p>📝 Note : ${film.note}</p>` : ''}
-          <label><input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${films.indexOf(film)})" /> Vu</label>
-          <button onclick="deleteFilm(${films.indexOf(film)})">Supprimer</button>
-        `;
-        filmList.appendChild(div);
-      });
-    }
-    filmForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const title = filmInput.value.trim();
-      const addedBy = addedBySelect.value;
-      const note = noteInput.value.trim();
-      if (title && addedBy) {
-        loader.style.display = 'block';
-        fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`)
-          .then(res => res.json())
-          .then(data => {
-            const poster = data.Poster && data.Poster !== "N/A" ? data.Poster : '';
-            const director = data.Director && data.Director !== "N/A" ? data.Director : 'Inconnu';
-            films.push({ title, addedBy, watched: false, poster, director, note });
-            saveToLocal();
-            displayFilms();
-            filmInput.value = '';
-            noteInput.value = '';
-            addedBySelect.value = '';
-          })
-          .catch(err => {
-            alert("Erreur lors de la récupération des infos du film.");
-            console.error(err);
-          })
-          .finally(() => loader.style.display = 'none');
-      }
-    });
-    sortSelect.addEventListener('change', () => {
-      saveToLocal();
-      displayFilms();
-    });
+  }
+
+  function parseJwt(token) {
     try {
-      loadFromLocal();
-      displayFilms();
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
     } catch (e) {
-      console.error('Erreur de chargement des films :', e);
-      localStorage.clear();
+      return null;
     }
-  </script>
+  }
+
+  function enterAsGuest() {
+    isGuest = true;
+    localStorage.setItem("authUser", "guest");
+    localStorage.setItem("isGuest", "1");
+    showApp("Invité");
+  }
+
+  function logout() {
+    localStorage.removeItem("authUser");
+    localStorage.removeItem("isGuest");
+    location.reload();
+  }
+
+  function showApp(name) {
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("appBox").classList.remove("hidden");
+    document.getElementById("welcomeMessage").textContent = "Bienvenue, " + name + " !";
+    const guest = localStorage.getItem("isGuest") === "1";
+    isGuest = guest;
+    document.getElementById("guestNote").style.display = guest ? "block" : "none";
+    loadFromLocal();
+    displayFilms();
+  }
+
+  function saveToLocal() {
+    localStorage.setItem("films", JSON.stringify(films));
+  }
+
+  function loadFromLocal() {
+    const stored = localStorage.getItem("films");
+    if (stored) films = JSON.parse(stored);
+  }
+
+  function displayFilms() {
+    filmList.innerHTML = '';
+    const sorted = [...films];
+    switch (sortSelect.value) {
+      case 'title': sorted.sort((a, b) => a.title.localeCompare(b.title)); break;
+      case 'addedBy': sorted.sort((a, b) => a.addedBy.localeCompare(b.addedBy)); break;
+      case 'watched': sorted.sort((a, b) => a.watched - b.watched); break;
+    }
+
+    sorted.forEach((film, index) => {
+      const div = document.createElement('div');
+      div.className = 'film';
+      div.innerHTML = `
+        ${film.poster ? `<img src="${film.poster}" alt="Affiche de ${film.title}" />` : ''}
+        <p><strong>${film.title}</strong></p>
+        <p>🎬 Réalisé par : ${film.director || 'Inconnu'}</p>
+        <p>👤 Ajouté par : ${film.addedBy}</p>
+        ${film.note ? `<p>📝 ${film.note}</p>` : ''}
+        ${!isGuest ? `
+        <label><input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${index})" /> Vu</label>
+        <button onclick="deleteFilm(${index})">Supprimer</button>` : ''}
+      `;
+      filmList.appendChild(div);
+    });
+  }
+
+  function toggleWatched(index) {
+    films[index].watched = !films[index].watched;
+    saveToLocal();
+    displayFilms();
+  }
+
+  function deleteFilm(index) {
+    if (confirm('Supprimer ce film ?')) {
+      films.splice(index, 1);
+      saveToLocal();
+      displayFilms();
+    }
+  }
+
+  filmForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (isGuest) return;
+    const title = filmInput.value.trim();
+    const addedBy = addedBySelect.value;
+    const note = noteInput.value.trim();
+    if (title && addedBy) {
+      loader.style.display = 'block';
+      fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`)
+        .then(res => res.json())
+        .then(data => {
+          const poster = data.Poster && data.Poster !== 'N/A' ? data.Poster : '';
+          const director = data.Director && data.Director !== 'N/A' ? data.Director : 'Inconnu';
+          films.push({ title, addedBy, watched: false, poster, director, note });
+          saveToLocal();
+          displayFilms();
+          filmInput.value = '';
+          noteInput.value = '';
+          addedBySelect.value = '';
+        })
+        .catch(err => console.error(err))
+        .finally(() => loader.style.display = 'none');
+    }
+  });
+
+  sortSelect.addEventListener('change', displayFilms);
+
+  window.onload = function () {
+    const authUser = localStorage.getItem("authUser");
+    const guest = localStorage.getItem("isGuest") === "1";
+    if (authUser) {
+      const name = guest ? "Invité" : JSON.parse(authUser).name || "Utilisateur";
+      showApp(name);
+    }
+  }
+</script>
+
 </body>
 </html>
