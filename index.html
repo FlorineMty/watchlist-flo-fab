@@ -22,6 +22,16 @@
   max-width: 700px;
 }
 
+.film.watched {
+  opacity: 0.6;
+  text-decoration: line-through;
+  transition: opacity 0.3s ease;
+}
+    
+.film.watched img {
+  filter: grayscale(100%);
+}
+
 .film-form input,
 .film-form select,
 .film-form textarea {
