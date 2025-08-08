@@ -152,11 +152,13 @@
   ];
   let films = [];
 
-  google.accounts.id.initialize({
-    client_id: "753185542113-ec8b0nlbtn4li698ljrfq8g6mpdccap4.apps.googleusercontent.com",
-    callback: handleCredentialResponse,
-    ux_mode: "popup"
-  });
+google.accounts.id.initialize({
+  client_id: "...",
+  callback: handleCredentialResponse,
+  ux_mode: "redirect",
+  login_uri: "https://florinemty.github.io/watchlist-flo-fab/",
+  auto_select: false
+});
 
   function handleCredentialResponse(response) {
     const user = parseJwt(response.credential);
