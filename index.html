@@ -31,6 +31,7 @@
   <h1>🎬 Watchlist des Flammes Jum</h1>
   <div id="googleSignInBtn">
     <button id="signInBtn" style="padding:8px 16px;border-radius:8px;background:#3478f6;color:#fff;border:none;cursor:pointer;">Connexion Google</button>
+    <button id="signOutBtn" style="padding:6px 12px; margin-top:10px; border-radius:8px; background:#eee; border:none; cursor:pointer;">Se déconnecter</button>
   </div>
 </header>
 
@@ -96,6 +97,14 @@ const firebaseConfig = {
     });
   });
 
+  document.getElementById("signOutBtn").addEventListener("click", () => {
+  auth.signOut().then(() => {
+    currentUser = null;
+    document.getElementById("userDisplay").textContent = "";
+    alert("Déconnecté !");
+  });
+});
+
   document.getElementById("filmForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const title = document.getElementById("filmInput").value.trim();
@@ -136,7 +145,7 @@ const firebaseConfig = {
           <h3>${film.title}</h3>
           <p>🎬 ${film.director}</p>
           <p>⭐ IMDb : ${film.imdbRating}</p>
-          <p>👤 ${addedName}</p>
+          <p>👤 ${addedName}${currentUser?.email === film.addedBy ? " (vous)" : ""}</p>
           <p><strong>Statut :</strong> ${film.status === "watched" ? "✅ Vu" : "⏳ À voir"}</p>
           <div class="status-toggle">
             <label>
