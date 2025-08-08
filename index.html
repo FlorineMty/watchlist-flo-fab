@@ -4,174 +4,219 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎬 Watchlist Authentifiée</title>
+  <title>🎬 Watchlist des Flammes Jum</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #f8f6f3, #f2ede7);
       margin: 0;
-      padding: 0 10px;
+      padding: 0;
+      color: #222;
     }
-    .film-form {
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: row;
+      gap: 40px;
+      padding: 40px;
+      flex-wrap: wrap;
+    }
+
+    .film-list {
+      flex: 2;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      margin: 30px auto;
-      width: 100%;
-      max-width: 700px;
+      gap: 20px;
+      min-width: 300px;
     }
-    .film-form input,
-    .film-form select,
-    .film-form textarea {
-      width: 100%;
-      max-width: 100%;
-      padding: 12px;
+
+    .filters {
+      flex: 1;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      min-width: 250px;
+      height: fit-content;
+    }
+
+    .filters h3 {
+      margin-top: 0;
       font-size: 1rem;
+    }
+
+    .filters label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .filters select, .filters input[type="checkbox"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .film-card {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      align-items: flex-start;
+    }
+
+    .film-card img {
+      width: 100px;
+      height: auto;
       border-radius: 8px;
-      border: 1px solid #ccc;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+      object-fit: cover;
     }
-    .film-form button {
-      align-self: flex-start;
-      padding: 10px 20px;
+
+    .film-info {
+      flex: 1;
     }
-    button {
-      background: #d5c5a4;
-      color: #222;
+
+    .film-info h2 {
+      margin: 0 0 6px;
+      font-size: 1.2rem;
+    }
+
+    .film-meta {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .film-status {
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .film-status span {
+      margin-right: 10px;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .profile img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .add-button {
       padding: 10px 20px;
       border: none;
+      background: #3478f6;
+      color: white;
+      font-weight: bold;
       border-radius: 8px;
-      transition: background 0.2s ease, transform 0.2s ease;
+      cursor: pointer;
     }
-    button:hover {
-      background: #cbb897;
-      transform: translateY(-2px);
+
+    .status-watched {
+      color: green;
     }
-    .main-card {
-      background: white;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+    .status-towatch {
+      color: orange;
     }
-    .container {
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .film-list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .film {
-      background: #faf9f7;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      transition: transform 0.2s;
-    }
-    .film:hover {
-      transform: translateY(-4px);
-    }
-    .film.watched {
-      opacity: 0.6;
-    }
-    .film.watched p {
-      text-decoration: line-through;
+
+    .status-paused {
       color: #999;
     }
-    .film.watched img {
-      filter: grayscale(100%);
-    }
-    .hidden { display: none; }
-    .readonly-note {
-      font-size: 0.9rem;
-      color: #888;
-      margin-top: 10px;
+
+    #googleSignInBtn {
+      margin: 40px auto;
+      display: flex;
+      justify-content: center;
     }
   </style>
 </head>
 <body>
 
-<div class="container" id="loginBox">
-  <h2>Connexion à la Watchlist</h2>
-  <div class="manual-login" id="manualLoginBox">
-    <input type="email" id="manualEmail" placeholder="Entrez votre adresse e-mail"
-      style="padding:10px; width:90%; max-width:400px; margin-bottom:10px; border-radius:6px; border:1px solid #ccc;">
-    <br>
-    <button type="button" onclick="launchGooglePrompt()">Se connecter avec Google</button>
+<header>
+  <h1>🎬 Movie Watchlist</h1>
+  <div class="profile">
+    <button class="add-button">+ Add Movie</button>
+    <img src="https://i.pravatar.cc/40" alt="User avatar" />
   </div>
-  <p>ou</p>
-  <button onclick="enterAsGuest()">Continuer en tant qu'invité</button>
-</div>
+</header>
 
-<div class="container hidden main-card" id="appBox">
-  <h2>🎬 Watchlist des Flammes Jum</h2>
-  <p id="welcomeMessage"></p>
-  <button onclick="logout()">Se déconnecter</button>
-  <div class="readonly-note" id="guestNote">Mode invité : lecture seule</div>
+<div id="googleSignInBtn"></div>
 
-  <form id="filmForm" class="film-form" autocomplete="off">
-    <input type="text" id="filmInput" placeholder="Titre du film..." required />
-    <select id="addedBy" required>
-      <option value="">Ajouté par ?</option>
-      <option value="Florine">Florine</option>
-      <option value="Fabien">Fabien</option>
+<div class="main">
+  <div class="film-list">
+    <div class="film-card">
+      <img src="https://upload.wikimedia.org/wikipedia/en/8/8a/Dark_Knight.jpg" alt="Oppenheimer">
+      <div class="film-info">
+        <h2>Oppenheimer</h2>
+        <div class="film-meta">Added by Fabien · ⭐⭐⭐⭐⭐</div>
+        <div class="film-status">
+          <span>❤️</span><span>😉</span><span class="status-watched">✔️ Watched</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="film-card">
+      <img src="https://upload.wikimedia.org/wikipedia/en/d/dc/Spider-Man_Into_the_Spider-Verse_poster.png" alt="Spider-Man">
+      <div class="film-info">
+        <h2>Spider-Man: Into the Spider-Verse</h2>
+        <div class="film-meta">Added by Florine · 👍 😊</div>
+        <div class="film-status"><span class="status-towatch">↪️ To Watch</span></div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="filters">
+    <h3>Filters</h3>
+    <label>Status</label>
+    <select>
+      <option>All</option>
+      <option>To Watch</option>
+      <option>Watched</option>
+      <option>Paused</option>
     </select>
-    <textarea id="noteInput" placeholder="Note personnelle (facultatif)"></textarea>
-    <button type="submit">Ajouter</button>
-  </form>
 
-  <select id="sortSelect">
-    <option value="default">Tri par défaut</option>
-    <option value="title">Titre</option>
-    <option value="addedBy">Ajouté par</option>
-    <option value="watched">Vu / Non vu</option>
-  </select>
+    <label>Sort by</label>
+    <select>
+      <option>Date added</option>
+      <option>Title</option>
+    </select>
 
-  <div class="loader" id="loader">Chargement...</div>
-  <div class="film-list" id="filmList"></div>
+    <label>Comments</label>
+    <input type="checkbox" checked />
+  </aside>
 </div>
 
 <script>
-  let isGuest = false;
-  const OMDB_API_KEY = 'd380a270';
-  const ALLOWED_EMAILS = [
-    "moutoussamy.florine@gmail.com",
-    "fabien.ogli@gmail.com"
-  ];
-  let films = [];
-
-google.accounts.id.initialize({
-  client_id: "...",
-  callback: handleCredentialResponse,
-  ux_mode: "redirect",
-  login_uri: "https://florinemty.github.io/watchlist-flo-fab/",
-  auto_select: false
-});
-
   function handleCredentialResponse(response) {
     const user = parseJwt(response.credential);
     console.log("Utilisateur connecté :", user);
-    if (user && user.email) {
-      if (!ALLOWED_EMAILS.includes(user.email)) {
-        alert("⚠️ Cet e-mail n’est pas autorisé à accéder à cette application.");
-        return;
-      }
-      localStorage.setItem("authUser", JSON.stringify(user));
-      localStorage.setItem("isGuest", "0");
-      showApp(user.name || "Utilisateur");
-    }
+    alert("Bienvenue, " + user.name);
   }
 
   function parseJwt(token) {
@@ -187,104 +232,23 @@ google.accounts.id.initialize({
     }
   }
 
-  function enterAsGuest() {
-    isGuest = true;
-    localStorage.setItem("authUser", "guest");
-    localStorage.setItem("isGuest", "1");
-    showApp("Invité");
-  }
-
-  function logout() {
-    localStorage.removeItem("authUser");
-    localStorage.removeItem("isGuest");
-    location.reload();
-  }
-
-  function showApp(name) {
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("appBox").classList.remove("hidden");
-    document.getElementById("welcomeMessage").textContent = "Bienvenue, " + name + " !";
-
-    const guest = localStorage.getItem("isGuest") === "1";
-    isGuest = guest;
-    document.getElementById("guestNote").style.display = guest ? "block" : "none";
-
-    if (guest) {
-      const formElements = document.querySelectorAll('#filmForm input, #filmForm select, #filmForm textarea, #filmForm button');
-      formElements.forEach(el => el.style.display = 'none');
-    }
-
-    loadFromLocal();
-    displayFilms();
-  }
-
-  function displayFilms() {
-    filmList.innerHTML = '';
-    const sorted = [...films];
-    switch (sortSelect.value) {
-      case 'title':
-        sorted.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case 'addedBy':
-        sorted.sort((a, b) => a.addedBy.localeCompare(b.addedBy));
-        break;
-      case 'watched':
-        sorted.sort((a, b) => a.watched - b.watched);
-        break;
-    }
-
-    sorted.forEach((film, index) => {
-      const div = document.createElement('div');
-      div.className = 'film' + (film.watched ? ' watched' : '');
-      div.innerHTML = `
-        ${film.poster ? `<img src="${film.poster}" alt="Affiche de ${film.title}" />` : ''}
-        <p><strong>${film.title}</strong></p>
-        <p>🎬 Réalisé par : ${film.director || 'Inconnu'}</p>
-        <p>👤 Ajouté par : ${film.addedBy}</p>
-        ${film.note ? `<p>📝 ${film.note}</p>` : ''}
-        ${!isGuest ? `
-          <label><input type="checkbox" ${film.watched ? 'checked' : ''} onchange="toggleWatched(${index})" /> Vu</label>
-          <button onclick="deleteFilm(${index})">Supprimer</button>` : ''}
-      `;
-      filmList.appendChild(div);
-    });
-  }
-
-  function toggleWatched(index) {
-    films[index].watched = !films[index].watched;
-    saveToLocal();
-    displayFilms();
-  }
-
-  function deleteFilm(index) {
-    if (confirm('Supprimer ce film ?')) {
-      films.splice(index, 1);
-      saveToLocal();
-      displayFilms();
-    }
-  }
-
-  function saveToLocal() {
-    localStorage.setItem("films", JSON.stringify(films));
-  }
-
-  function loadFromLocal() {
-    const stored = localStorage.getItem("films");
-    if (stored) films = JSON.parse(stored);
-  }
-
-  function launchGooglePrompt() {
-    document.getElementById("manualLoginBox").style.display = "none";
-    google.accounts.id.prompt();
-  }
-
   window.onload = function () {
-    const authUser = localStorage.getItem("authUser");
-    const guest = localStorage.getItem("isGuest") === "1";
-    if (authUser) {
-      const name = guest ? "Invité" : JSON.parse(authUser).name || "Utilisateur";
-      showApp(name);
-    }
+    google.accounts.id.initialize({
+      client_id: "753185542113-ec8b0nlbtn4li698ljrfq8g6mpdccap4.apps.googleusercontent.com",
+      callback: handleCredentialResponse,
+      auto_select: false,
+      ux_mode: "popup"
+    });
+
+    google.accounts.id.renderButton(
+      document.getElementById("googleSignInBtn"),
+      {
+        theme: "outline",
+        size: "large",
+        type: "standard",
+        shape: "pill"
+      }
+    );
   }
 </script>
 
