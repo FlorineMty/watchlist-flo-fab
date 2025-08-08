@@ -154,16 +154,24 @@ function handleCredentialResponse(response) {
     location.reload();
   }
 
-  function showApp(name) {
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("appBox").classList.remove("hidden");
-    document.getElementById("welcomeMessage").textContent = "Bienvenue, " + name + " !";
-    const guest = localStorage.getItem("isGuest") === "1";
-    isGuest = guest;
-    document.getElementById("guestNote").style.display = guest ? "block" : "none";
-    loadFromLocal();
-    displayFilms();
+function showApp(name) {
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("appBox").classList.remove("hidden");
+  document.getElementById("welcomeMessage").textContent = "Bienvenue, " + name + " !";
+
+  const guest = localStorage.getItem("isGuest") === "1";
+  isGuest = guest;
+  document.getElementById("guestNote").style.display = guest ? "block" : "none";
+
+  // Cacher les champs du formulaire si invité
+  if (guest) {
+    const formElements = document.querySelectorAll('#filmForm input, #filmForm select, #filmForm textarea, #filmForm button');
+    formElements.forEach(el => el.style.display = 'none');
   }
+
+  loadFromLocal();
+  displayFilms();
+}
 
   function saveToLocal() {
     localStorage.setItem("films", JSON.stringify(films));
