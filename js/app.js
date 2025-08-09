@@ -95,21 +95,16 @@ const firebaseConfig = {
 }
 
   onValue(ref(db, "films"), snapshot => {
-  console.log("📦 Films reçus depuis Firebase :", snapshot.size);
-
-  if (snapshot.size === 0) {
-    console.warn("⚠️ Aucune donnée dans le nœud 'films'");
-  }
+  console.log("✅ Films reçus depuis Firebase :", snapshot.size);
 
   snapshot.forEach(child => {
-    const film = child.val();
-    const key = child.key;
-    console.log("🎞️ Film reçu :", film.title, "| Ajouté par :", film.addedBy);
+    console.log("🎞️ Film :", child.val().title);
   });
 
   allFilms = snapshot;
   renderFilmGrid(snapshot);
 });
+
 
   window.toggleStatus = (key, currentStatus) => {
     const newStatus = currentStatus === "watched" ? "to_watch" : "watched";
