@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-console.log("✅ app.js chargé");
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQClDY0C0tYyCnCQRNVh4YvDaA1kFA9RM",
@@ -66,43 +65,57 @@ const firebaseConfig = {
   });
 
   function renderFilmGrid(snapshot) {
-    const grid = document.getElementById("filmGrid");
-    grid.innerHTML = '';
-    const statusFilter = document.getElementById("statusFilter").value;
-    const userFilter = document.getElementById("userFilter").value;
-    snapshot.forEach(child => {
-      const film = child.val();
-      const key = child.key;
-      const addedName = allowedEmails[film.addedBy] || "Inconnu";
+  const grid = document.getElementById("filmGrid");
+  grid.innerHTML = '';
 
-      const statusMatch = statusFilter === "all" || film.status === statusFilter;
-      const normalizedEmail = (film.addedBy || "").toLowerCase();
-      const userMatch = userFilter === "all"
-        || (userFilter === "florine" && normalizedEmail.includes("florine"))
-        || (userFilter === "fabien" && normalizedEmail.includes("fabien"));
+  const statusFilter = document.getElementById("statusFilter").value;
+  const userFilter = document.getElementById("userFilter").value;
 
-      if (statusMatch && userMatch) {
-        const div = document.createElement("div");
-        div.className = "film-card";
-        div.innerHTML = `
-          <img src="${film.poster}" alt="Affiche">
-          <h3>${film.title}</h3>
-          <p>🎬 ${film.director}</p>
-          <p>⭐ IMDb : ${film.imdbRating}</p>
-          <p>👤 ${addedName}${currentUser?.email === film.addedBy ? " (vous)" : ""}</p>
-          <p><strong>Statut :</strong> ${film.status === "watched" ? "✅ Vu" : "⏳ À voir"}</p>
-          <div class="status-toggle">
-            <label>
-              <input type="checkbox" ${film.status === "watched" ? "checked" : ""} onchange="window.toggleStatus('${key}', '${film.status}')">
-              Marquer comme vu
-            </label>
-          </div>
-          <button onclick="window.deleteFilm('${key}')">🗑️</button>
-        `;
-        grid.appendChild(div);
-      }
-    });
+  let filmsDisplayed = 0;
+
+  snapshot.forEach(child => {
+    const film = child.val();
+    const key = child.key;
+
+    // Vérifie que film.addedBy existe
+    const email = (film.addedBy || "").toLowerCase();
+    const addedName = allowedEmails[email] || email || "Inconnu";
+
+    // Applique les filtres
+    const statusMatch = statusFilter === "all" || film.status === statusFilter;
+    const userMatch =
+      userFilter === "all" ||
+      (userFilter === "florine" && email.includes("florine")) ||
+      (userFilter === "fabien" && email.includes("fabien"));
+
+    if (statusMatch && userMatch) {
+      console.log("🎞️ Affichage film :", film.title, "| Ajouté par :", film.addedBy);
+      filmsDisplayed++;
+      const div = document.createElement("div");
+      div.className = "film-card";
+      div.innerHTML = `
+        <img src="${film.poster}" alt="Affiche">
+        <h3>${film.title}</h3>
+        <p>🎬 ${film.director}</p>
+        <p>⭐ IMDb : ${film.imdbRating}</p>
+        <p>👤 ${addedName}${currentUser?.email === film.addedBy ? " (vous)" : ""}</p>
+        <p><strong>Statut :</strong> ${film.status === "watched" ? "✅ Vu" : "⏳ À voir"}</p>
+        <div class="status-toggle">
+          <label>
+            <input type="checkbox" ${film.status === "watched" ? "checked" : ""} onchange="window.toggleStatus('${key}', '${film.status}')">
+            Marquer comme vu
+          </label>
+        </div>
+        <button onclick="window.deleteFilm('${key}')">🗑️</button>
+      `;
+      grid.appendChild(div);
+    }
+  });
+
+  if (filmsDisplayed === 0) {
+    grid.innerHTML = `<p style="text-align:center;">Aucun film ne correspond aux filtres sélectionnés.</p>`;
   }
+}
 
   onValue(ref(db, "films"), snapshot => {
     allFilms = snapshot;
