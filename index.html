@@ -165,6 +165,7 @@ const firebaseConfig = {
 
   onValue(ref(db, "films"), snapshot => {
     allFilms = snapshot;
+    document.getElementById("userFilter").value = "all";
     renderFilmGrid(snapshot);
   });
 
