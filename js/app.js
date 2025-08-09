@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQClDY0C0tYyCnCQRNVh4YvDaA1kFA9RM",
@@ -21,8 +21,8 @@ const firebaseConfig = {
   let allFilms = [];
 
   const allowedEmails = {
-    "moutoussamy.florine@gmail.com": "florine",
-    "fabien.ogli@gmail.com": "fabien"
+    "moutoussamy.florine@gmail.com": "Florine",
+    "fabien.ogli@gmail.com": "Fabien"
   };
 
   document.getElementById("signInBtn").addEventListener("click", () => {
@@ -49,7 +49,7 @@ const firebaseConfig = {
     e.preventDefault();
     const title = document.getElementById("filmInput").value.trim();
     if (!currentUser || !allowedEmails[currentUser.email]) return alert("Connexion requise.");
-    const res = await fetch(`https://www.omdbapi.com/?apikey=d380a270&t=${encodeURIComponent(title)}`);
+    const res = await fetch(https://www.omdbapi.com/?apikey=d380a270&t=${encodeURIComponent(title)});
     const data = await res.json();
     if (data.Response === "False") return alert("Film non trouvé.");
     const film = {
@@ -65,55 +65,56 @@ const firebaseConfig = {
   });
 
   function renderFilmGrid(snapshot) {
-  const grid = document.getElementById("filmGrid");
-  grid.innerHTML = '';
+    const grid = document.getElementById("filmGrid");
+    grid.innerHTML = '';
+    const statusFilter = document.getElementById("statusFilter").value;
+    const userFilter = document.getElementById("userFilter").value;
+    snapshot.forEach(child => {
+      const film = child.val();
+      const key = child.key;
+      const addedName = allowedEmails[film.addedBy] || "Inconnu";
 
-  let filmsDisplayed = 0;
+      const statusMatch = statusFilter === "all" || film.status === statusFilter;
+      const userMatch = userFilter === "all"
+    || (userFilter === "florine" && film.addedBy === "moutoussamy.florine@gmail.com")
+    || (userFilter === "fabien" && film.addedBy === "fabien.ogli@gmail.com");
 
-  snapshot.forEach(child => {
-    const film = child.val();
-    const key = child.key;
-
-    // affichage brut
-    filmsDisplayed++;
-    const div = document.createElement("div");
-    div.className = "film-card";
-    div.innerHTML = `
-      <img src="${film.poster}" alt="Affiche">
-      <h3>${film.title}</h3>
-      <p>🎬 ${film.director}</p>
-      <p>⭐ IMDb : ${film.imdbRating}</p>
-      <p>👤 ${film.addedBy}</p>
-      <p><strong>Statut :</strong> ${film.status}</p>
-    `;
-    grid.appendChild(div);
-  });
-
-  if (filmsDisplayed === 0) {
-    grid.innerHTML = "<p style='text-align:center;'>Aucun film trouvé</p>";
+      if (statusMatch && userMatch) {
+        const div = document.createElement("div");
+        div.className = "film-card";
+        div.innerHTML = 
+          <img src="${film.poster}" alt="Affiche">
+          <h3>${film.title}</h3>
+          <p>🎬 ${film.director}</p>
+          <p>⭐ IMDb : ${film.imdbRating}</p>
+          <p>👤 ${addedName}${currentUser?.email === film.addedBy ? " (vous)" : ""}</p>
+          <p><strong>Statut :</strong> ${film.status === "watched" ? "✅ Vu" : "⏳ À voir"}</p>
+          <div class="status-toggle">
+            <label>
+              <input type="checkbox" ${film.status === "watched" ? "checked" : ""} onchange="window.toggleStatus('${key}', '${film.status}')">
+              Marquer comme vu
+            </label>
+          </div>
+          <button onclick="window.deleteFilm('${key}')">🗑️</button>
+        ;
+        grid.appendChild(div);
+      }
+    });
   }
-}
 
   onValue(ref(db, "films"), snapshot => {
-  console.log("✅ Films reçus depuis Firebase :", snapshot.size);
-
-  snapshot.forEach(child => {
-    console.log("🎞️ Film :", child.val().title);
+    allFilms = snapshot;
+    renderFilmGrid(snapshot);
   });
-
-  allFilms = snapshot;
-  renderFilmGrid(snapshot);
-});
-
 
   window.toggleStatus = (key, currentStatus) => {
     const newStatus = currentStatus === "watched" ? "to_watch" : "watched";
-    set(ref(db, `films/${key}/status`), newStatus);
+    set(ref(db, films/${key}/status), newStatus);
   };
 
   window.deleteFilm = (key) => {
     if (confirm("Supprimer ce film ?")) {
-      remove(ref(db, `films/${key}`));
+      remove(ref(db, films/${key}));
     }
   };
 
