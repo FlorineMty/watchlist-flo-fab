@@ -52,9 +52,10 @@ document.getElementById("filmForm").addEventListener("submit", async (e) => {
 
 function listenToFilms() {
   onValue(ref(db, "films"), (snapshot) => {
-    allFilms = snapshot;
-    renderFilmGrid(snapshot, currentUser, allowedEmails);
-  });
+  console.log("✅ Films reçus depuis Firebase :", snapshot.size);
+  allFilms = snapshot;
+  renderFilmGrid(snapshot, currentUser, allowedEmails);
+});
 }
 
 window.toggleStatus = (key, currentStatus) => {
