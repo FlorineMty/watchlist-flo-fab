@@ -1,10 +1,18 @@
 export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
   const grid = document.getElementById("filmGrid");
   grid.innerHTML = '';
+
   snapshot.forEach(child => {
     const film = child.val();
     const key = child.key;
     const addedName = allowedEmails[film.addedBy] || "Inconnu";
+
+    // Vérifie si l'utilisateur connecté est autorisé à supprimer
+    const isAuthorized = currentUser?.email && allowedEmails[currentUser.email];
+
+    const deleteButtonHTML = isAuthorized
+      ? `<button onclick="window.deleteFilm('${key}')">🗑️</button>`
+      : '';
 
     const div = document.createElement("div");
     div.className = "film-card";
@@ -21,7 +29,7 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
           Marquer comme vu
         </label>
       </div>
-      <button onclick="window.deleteFilm('${key}')">🗑️</button>
+      ${deleteButtonHTML}
     `;
     grid.appendChild(div);
   });
