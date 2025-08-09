@@ -156,7 +156,7 @@ const firebaseConfig = {
               Marquer comme vu
             </label>
           </div>
-          <button onclick="window.deleteFilm('${key}')">🗑️</button>
+          ${currentUser ? `<button onclick="window.deleteFilm('${key}')">🗑️</button>` : ''}
         `;
         grid.appendChild(div);
       }
@@ -174,11 +174,16 @@ const firebaseConfig = {
     set(ref(db, `films/${key}/status`), newStatus);
   };
 
-  window.deleteFilm = (key) => {
-    if (confirm("Supprimer ce film ?")) {
-      remove(ref(db, `films/${key}`));
-    }
-  };
+window.deleteFilm = (key) => {
+  if (!currentUser || !allowedEmails[currentUser.email]) {
+    alert("Vous devez être connecté pour supprimer un film.");
+    return;
+  }
+
+  if (confirm("Supprimer ce film ?")) {
+    remove(ref(db, `films/${key}`));
+  }
+};
 
   document.getElementById("statusFilter").addEventListener("change", () => renderFilmGrid(allFilms));
   document.getElementById("userFilter").addEventListener("change", () => renderFilmGrid(allFilms));
