@@ -135,10 +135,13 @@ const firebaseConfig = {
       const key = child.key;
       const addedName = allowedEmails[film.addedBy] || "Inconnu";
 
-      const statusMatch = statusFilter === "all" || film.status === statusFilter;
-      const userMatch = userFilter === "all"
-    || (userFilter === "florine" && film.addedBy === "moutoussamy.florine@gmail.com")
-    || (userFilter === "fabien" && film.addedBy === "fabien.ogli@gmail.com");
+      const statusMatch = true;
+      const userMatch = true;
+
+      //const statusMatch = statusFilter === "all" || film.status === statusFilter;
+     // const userMatch = userFilter === "all"
+   // || (userFilter === "florine" && film.addedBy === "moutoussamy.florine@gmail.com")
+   // || (userFilter === "fabien" && film.addedBy === "fabien.ogli@gmail.com");
 
       if (statusMatch && userMatch) {
         const div = document.createElement("div");
