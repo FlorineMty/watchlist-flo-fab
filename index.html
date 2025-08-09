@@ -50,8 +50,8 @@
     </select>
     <select id="userFilter">
       <option value="all">Tous les utilisateurs</option>
-      <option value="florine">Florine</option>
-      <option value="fabien">Fabien</option>
+      <option value="florine">florine</option>
+      <option value="fabien">fabien</option>
     </select>
   </div>
 
@@ -82,8 +82,8 @@ const firebaseConfig = {
   let allFilms = [];
 
   const allowedEmails = {
-    "moutoussamy.florine@gmail.com": "Florine",
-    "fabien.ogli@gmail.com": "Fabien"
+    "moutoussamy.florine@gmail.com": "florine",
+    "fabien.ogli@gmail.com": "fabien"
   };
 
   document.getElementById("signInBtn").addEventListener("click", () => {
@@ -136,9 +136,10 @@ const firebaseConfig = {
       const addedName = allowedEmails[film.addedBy] || "Inconnu";
 
       const statusMatch = statusFilter === "all" || film.status === statusFilter;
+      const normalizedEmail = (film.addedBy || "").toLowerCase();
       const userMatch = userFilter === "all"
-    || (userFilter === "florine" && film.addedBy === "moutoussamy.florine@gmail.com")
-    || (userFilter === "fabien" && film.addedBy === "fabien.ogli@gmail.com");
+        || (userFilter === "florine" && normalizedEmail.includes("florine"))
+        || (userFilter === "fabien" && normalizedEmail.includes("fabien"));
 
       if (statusMatch && userMatch) {
         const div = document.createElement("div");
