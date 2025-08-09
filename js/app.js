@@ -76,10 +76,16 @@ window.toggleStatus = (key, currentStatus) => {
 };
 
 window.deleteFilm = (key) => {
+  if (!currentUser || !allowedEmails[currentUser.email]) {
+    alert("❌ Seuls Florine et Fabien peuvent supprimer un film.");
+    return;
+  }
+
   if (confirm("Supprimer ce film ?")) {
     remove(ref(db, `films/${key}`));
   }
 };
+
 
 document.getElementById("statusFilter").addEventListener("change", () => renderFilmGrid(allFilms, currentUser, allowedEmails));
 document.getElementById("userFilter").addEventListener("change", () => renderFilmGrid(allFilms, currentUser, allowedEmails));
