@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎬 Watchlist Firebase</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header>
+  <h1>🎬 Watchlist des Flammes Jum</h1>
+  <div id="googleSignInBtn">
+    <button id="signInBtn">Connexion Google</button>
+    <div id="userDisplay" style="margin-top:5px; font-size: 0.9rem; color: #555;"></div>
+    <button id="signOutBtn" style="padding:6px 12px; margin-top:10px; border-radius:8px; background:#eee; border:none; cursor:pointer;">Se déconnecter</button>
+  </div>
+</header>
+
+<div class="main">
+  <form id="filmForm">
+    <input type="text" id="filmInput" placeholder="Titre du film..." required>
+    <button type="submit">Ajouter</button>
+  </form>
+
+  <div id="filters">
+    <select id="statusFilter">
+      <option value="all">Tous les statuts</option>
+      <option value="watched">Vu</option>
+      <option value="to_watch">À voir</option>
+    </select>
+    <select id="userFilter">
+      <option value="all">Tous les utilisateurs</option>
+      <option value="florine">Florine</option>
+      <option value="fabien">Fabien</option>
+    </select>
+  </div>
+  <div id="filmGrid"></div>
+</div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
