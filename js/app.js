@@ -1,7 +1,9 @@
+// ✅ Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+// ✅ Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBQClDY0C0tYyCnCQRNVh4YvDaA1kFA9RM",
   authDomain: "watchlist-468413.firebaseapp.com",
@@ -25,7 +27,7 @@ const allowedEmails = {
   "fabien.ogli@gmail.com": "Fabien"
 };
 
-// Connexion Google
+// ✅ Connexion Google
 document.getElementById("signInBtn").addEventListener("click", () => {
   signInWithPopup(auth, provider).then(result => {
     const email = result.user.email;
@@ -33,28 +35,39 @@ document.getElementById("signInBtn").addEventListener("click", () => {
       alert("❌ Accès réservé à Florine et Fabien.");
       return;
     }
+
     currentUser = result.user;
-    document.getElementById("userDisplay").textContent = "Connecté en tant que : " + allowedEmails[email];
+    document.getElementById("userDisplay").textContent =
+      "Connecté en tant que : " + allowedEmails[email];
+
+    // ✅ Charger les films APRES authentification réussie
+    onValue(ref(db, "films"), snapshot => {
+      allFilms = snapshot;
+      renderFilmGrid(snapshot);
+    });
   });
 });
 
-// Déconnexion
+// ✅ Déconnexion
 document.getElementById("signOutBtn").addEventListener("click", () => {
   auth.signOut().then(() => {
     currentUser = null;
     document.getElementById("userDisplay").textContent = "";
     alert("Déconnecté !");
+    document.getElementById("filmGrid").innerHTML = ""; // Vide la grille à la déconnexion
   });
 });
 
-// Ajout de film
+// ✅ Soumission du formulaire
 document.getElementById("filmForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const title = document.getElementById("filmInput").value.trim();
   if (!currentUser || !allowedEmails[currentUser.email]) return alert("Connexion requise.");
+
   const res = await fetch(`https://www.omdbapi.com/?apikey=d380a270&t=${encodeURIComponent(title)}`);
   const data = await res.json();
   if (data.Response === "False") return alert("Film non trouvé.");
+
   const film = {
     title: data.Title,
     director: data.Director || "Inconnu",
@@ -63,17 +76,19 @@ document.getElementById("filmForm").addEventListener("submit", async (e) => {
     addedBy: currentUser.email,
     status: "to_watch"
   };
+
   push(ref(db, "films"), film);
   document.getElementById("filmInput").value = '';
 });
 
-// Affichage des films
+// ✅ Affichage des films
 function renderFilmGrid(snapshot) {
   const grid = document.getElementById("filmGrid");
   grid.innerHTML = '';
+
   const statusFilter = document.getElementById("statusFilter").value;
   const userFilter = document.getElementById("userFilter").value;
-  
+
   snapshot.forEach(child => {
     const film = child.val();
     const key = child.key;
@@ -107,25 +122,19 @@ function renderFilmGrid(snapshot) {
   });
 }
 
-// Récupération des films en temps réel
-onValue(ref(db, "films"), snapshot => {
-  allFilms = snapshot;
-  renderFilmGrid(snapshot);
-});
-
-// Toggle statut
+// ✅ Changement de statut
 window.toggleStatus = (key, currentStatus) => {
   const newStatus = currentStatus === "watched" ? "to_watch" : "watched";
   set(ref(db, `films/${key}/status`), newStatus);
 };
 
-// Supprimer un film
+// ✅ Suppression d’un film
 window.deleteFilm = (key) => {
   if (confirm("Supprimer ce film ?")) {
     remove(ref(db, `films/${key}`));
   }
 };
 
-// Filtres
+// ✅ Filtres
 document.getElementById("statusFilter").addEventListener("change", () => renderFilmGrid(allFilms));
 document.getElementById("userFilter").addEventListener("change", () => renderFilmGrid(allFilms));
