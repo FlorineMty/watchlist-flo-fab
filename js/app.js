@@ -74,43 +74,35 @@ const firebaseConfig = {
   let filmsDisplayed = 0;
 
   snapshot.forEach(child => {
-    const film = child.val();
-    const key = child.key;
+  const film = child.val();
+  const key = child.key;
+  const addedName = allowedEmails[film.addedBy] || "Inconnu";
 
-    // Vérifie que film.addedBy existe
-    const email = (film.addedBy || "").toLowerCase();
-    const addedName = allowedEmails[email] || email || "Inconnu";
+  // ✅ Filtres désactivés temporairement
+  const statusMatch = true;
+  const userMatch = true;
 
-    // Applique les filtres
-    const statusMatch = statusFilter === "all" || film.status === statusFilter;
-    const userMatch =
-      userFilter === "all" ||
-      (userFilter === "florine" && email.includes("florine")) ||
-      (userFilter === "fabien" && email.includes("fabien"));
-
-    if (statusMatch && userMatch) {
-      console.log("🎞️ Affichage film :", film.title, "| Ajouté par :", film.addedBy);
-      filmsDisplayed++;
-      const div = document.createElement("div");
-      div.className = "film-card";
-      div.innerHTML = `
-        <img src="${film.poster}" alt="Affiche">
-        <h3>${film.title}</h3>
-        <p>🎬 ${film.director}</p>
-        <p>⭐ IMDb : ${film.imdbRating}</p>
-        <p>👤 ${addedName}${currentUser?.email === film.addedBy ? " (vous)" : ""}</p>
-        <p><strong>Statut :</strong> ${film.status === "watched" ? "✅ Vu" : "⏳ À voir"}</p>
-        <div class="status-toggle">
-          <label>
-            <input type="checkbox" ${film.status === "watched" ? "checked" : ""} onchange="window.toggleStatus('${key}', '${film.status}')">
-            Marquer comme vu
-          </label>
-        </div>
-        <button onclick="window.deleteFilm('${key}')">🗑️</button>
-      `;
-      grid.appendChild(div);
-    }
-  });
+  if (statusMatch && userMatch) {
+    const div = document.createElement("div");
+    div.className = "film-card";
+    div.innerHTML = `
+      <img src="${film.poster}" alt="Affiche">
+      <h3>${film.title}</h3>
+      <p>🎬 ${film.director}</p>
+      <p>⭐ IMDb : ${film.imdbRating}</p>
+      <p>👤 ${addedName}${currentUser?.email === film.addedBy ? " (vous)" : ""}</p>
+      <p><strong>Statut :</strong> ${film.status === "watched" ? "✅ Vu" : "⏳ À voir"}</p>
+      <div class="status-toggle">
+        <label>
+          <input type="checkbox" ${film.status === "watched" ? "checked" : ""} onchange="window.toggleStatus('${key}', '${film.status}')">
+          Marquer comme vu
+        </label>
+      </div>
+      <button onclick="window.deleteFilm('${key}')">🗑️</button>
+    `;
+    grid.appendChild(div);
+  }
+});
 
   if (filmsDisplayed === 0) {
     grid.innerHTML = `<p style="text-align:center;">Aucun film ne correspond aux filtres sélectionnés.</p>`;
@@ -118,9 +110,14 @@ const firebaseConfig = {
 }
 
   onValue(ref(db, "films"), snapshot => {
-    allFilms = snapshot;
-    renderFilmGrid(snapshot);
+  console.log("✅ Films reçus depuis Firebase :", snapshot.size);
+  snapshot.forEach(child => {
+    console.log("🎞️ Film :", child.val().title, "| Email :", child.val().addedBy);
   });
+  allFilms = snapshot;
+  renderFilmGrid(snapshot);
+});
+
 
   window.toggleStatus = (key, currentStatus) => {
     const newStatus = currentStatus === "watched" ? "to_watch" : "watched";
