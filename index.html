@@ -136,7 +136,9 @@ const firebaseConfig = {
       const addedName = allowedEmails[film.addedBy] || "Inconnu";
 
       const statusMatch = statusFilter === "all" || film.status === statusFilter;
-      const userMatch = userFilter === "all" || userFilter === addedName.toLowerCase();
+      const userMatch = userFilter === "all"
+    || (userFilter === "florine" && film.addedBy === "moutoussamy.florine@gmail.com")
+    || (userFilter === "fabien" && film.addedBy === "fabien.ogli@gmail.com");
 
       if (statusMatch && userMatch) {
         const div = document.createElement("div");
