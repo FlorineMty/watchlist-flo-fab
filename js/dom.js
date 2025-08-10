@@ -12,13 +12,13 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     const film = child.val();
     const key = child.key;
 
-    // ✅ Normalize status
+    // ✅ Normalise le statut pour éviter les erreurs de casse (e.g., "Watched" vs "watched")
     film.status = (film.status || "").toLowerCase();
 
     const email = (film.addedBy || "").toLowerCase();
     const addedName = allowedEmails[email] || email;
 
-    // 🔍 Filtrage utilisateur
+    // 🎯 Filtrage utilisateur
     let expectedEmail = null;
     if (userFilter !== "all") {
       expectedEmail = Object.keys(allowedEmails).find(
