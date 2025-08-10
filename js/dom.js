@@ -37,9 +37,11 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
 
       let div;
 
+      // 🎯 Films à voir
       if (film.status === "to_watch") {
         div = document.createElement("div");
         div.className = "film-card";
+        div.setAttribute("data-key", key);
         div.innerHTML = `
           <img src="${film.poster}" alt="Affiche">
           <h3>${film.title}</h3>
@@ -54,19 +56,22 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
           ${deleteButtonHTML}
         `;
         toWatchList.appendChild(div);
+
+      // ✅ Films vus
       } else if (film.status === "watched") {
-      div = document.createElement("div");
-      div.className = "film-card condensed";
-      div.innerHTML = `
-        <h4>${film.title}</h4>
-        <span>⭐ ${film.imdbRating}</span>
-        <button class="toggle-status" onclick="window.toggleStatus('${key}', '${film.status}')">
-          ↩️ Remettre à voir
-        </button>
-        ${deleteButtonHTML}
-      `;
-      watchedList.appendChild(div);
-    }
+        div = document.createElement("div");
+        div.className = "film-card condensed";
+        div.setAttribute("data-key", key);
+        div.innerHTML = `
+          <h4>${film.title}</h4>
+          <span>⭐ ${film.imdbRating}</span>
+          <button class="toggle-status" onclick="window.toggleStatus('${key}', '${film.status}')">
+            ↩️ Remettre à voir
+          </button>
+          ${deleteButtonHTML}
+        `;
+        watchedList.appendChild(div);
+      }
     }
   });
 }
