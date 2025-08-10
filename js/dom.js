@@ -12,13 +12,13 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     const film = child.val();
     const key = child.key;
 
-    // ✅ Normalise le statut pour éviter les erreurs de casse (e.g., "Watched" vs "watched")
+    // ✅ Normalisation du statut (pour éviter les erreurs avec "Watched", "watched", etc.)
     film.status = (film.status || "").toLowerCase();
 
     const email = (film.addedBy || "").toLowerCase();
     const addedName = allowedEmails[email] || email;
 
-    // 🎯 Filtrage utilisateur
+    // 🎯 Filtres
     let expectedEmail = null;
     if (userFilter !== "all") {
       expectedEmail = Object.keys(allowedEmails).find(
@@ -37,11 +37,12 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
 
       let div;
 
-      // 🎯 Films à voir
+      // 🎯 Carte pour films "À voir"
       if (film.status === "to_watch") {
         div = document.createElement("div");
-        div.className = "film-card";
+        div.className = "film-card fade-in";
         div.setAttribute("data-key", key);
+
         div.innerHTML = `
           <img src="${film.poster}" alt="Affiche">
           <h3>${film.title}</h3>
@@ -55,13 +56,15 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
           </div>
           ${deleteButtonHTML}
         `;
+
         toWatchList.appendChild(div);
 
-      // ✅ Films vus
+      // ✅ Carte condensée pour films "Vu"
       } else if (film.status === "watched") {
         div = document.createElement("div");
-        div.className = "film-card condensed";
+        div.className = "film-card condensed fade-in";
         div.setAttribute("data-key", key);
+
         div.innerHTML = `
           <h4>${film.title}</h4>
           <span>⭐ ${film.imdbRating}</span>
@@ -70,6 +73,7 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
           </button>
           ${deleteButtonHTML}
         `;
+
         watchedList.appendChild(div);
       }
     }
