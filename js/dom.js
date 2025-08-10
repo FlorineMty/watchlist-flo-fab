@@ -2,16 +2,14 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
   const toWatchList = document.getElementById("toWatchList");
   const watchedList = document.getElementById("watchedList");
   const watchedColumn = document.getElementById("watchedColumn");
-  const toWatchColumn = document.getElementById("toWatchColumn");
 
-  // Réinitialise les contenus
   toWatchList.innerHTML = '';
   watchedList.innerHTML = '';
 
   const statusFilter = document.getElementById("statusFilter").value;
   const userFilter = document.getElementById("userFilter").value;
 
-  let hasWatchedFilms = false;
+  let hasWatched = false;
 
   snapshot.forEach(child => {
     const film = child.val();
@@ -24,7 +22,7 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     let expectedEmail = null;
     if (userFilter !== "all") {
       expectedEmail = Object.keys(allowedEmails).find(
-        key => allowedEmails[key].toLowerCase() === userFilter
+        k => allowedEmails[k].toLowerCase() === userFilter
       );
     }
 
@@ -32,17 +30,16 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     const userMatch = userFilter === "all" || email === expectedEmail;
 
     if (statusMatch && userMatch) {
-      const isAuthorized = currentUser?.email && allowedEmails[currentUser.email];
+      const isAuthorized = currentUser?.email && allowedEmails.hasOwnProperty(currentUser.email);
       const deleteButtonHTML = isAuthorized
         ? `<button onclick="window.deleteFilm('${key}')">🗑️</button>`
         : '';
 
-      let div;
+      let div = document.createElement("div");
+      div.setAttribute("data-key", key);
 
       if (film.status === "to_watch") {
-        div = document.createElement("div");
         div.className = "film-card fade-in";
-        div.setAttribute("data-key", key);
         div.innerHTML = `
           <img src="${film.poster}" alt="Affiche">
           <h3>${film.title}</h3>
@@ -57,11 +54,11 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
           ${deleteButtonHTML}
         `;
         toWatchList.appendChild(div);
-      } else if (film.status === "watched") {
-        hasWatchedFilms = true;
-        div = document.createElement("div");
+      }
+
+      else if (film.status === "watched") {
+        hasWatched = true;
         div.className = "film-card condensed fade-in";
-        div.setAttribute("data-key", key);
         div.innerHTML = `
           <h4>${film.title}</h4>
           <span>⭐ ${film.imdbRating}</span>
@@ -75,12 +72,6 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     }
   });
 
-  // Affiche ou masque la colonne "Vu" selon qu'elle contient des films
-  if (hasWatchedFilms) {
-    watchedColumn.style.display = "block";
-    toWatchColumn.style.flex = "1";
-  } else {
-    watchedColumn.style.display = "none";
-    toWatchColumn.style.flex = "1 1 100%";
-  }
+  // 👁️ Affichage conditionnel de la colonne "Vu"
+  watchedColumn.style.display = hasWatched ? "block" : "none";
 }
