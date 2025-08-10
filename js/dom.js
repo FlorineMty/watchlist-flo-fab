@@ -16,6 +16,7 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     const key = child.key;
 
     film.status = (film.status || "").toLowerCase();
+
     const email = (film.addedBy || "").toLowerCase();
     const addedName = allowedEmails[email] || email;
 
@@ -29,13 +30,16 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     const statusMatch = statusFilter === "all" || film.status === statusFilter;
     const userMatch = userFilter === "all" || email === expectedEmail;
 
-    if (statusMatch && userMatch) {
-      const isAuthorized = currentUser?.email && allowedEmails.hasOwnProperty(currentUser.email);
-      const deleteButtonHTML = isAuthorized
-        ? `<button onclick="window.deleteFilm('${key}')">🗑️</button>`
-        : '';
+    // 🔐 Vérifie si l’utilisateur connecté est autorisé
+    const currentEmail = (currentUser?.email || "").toLowerCase();
+    const isAuthorized = currentEmail in allowedEmails;
 
-      let div = document.createElement("div");
+    const deleteButtonHTML = isAuthorized
+      ? `<button onclick="window.deleteFilm('${key}')">🗑️</button>`
+      : '';
+
+    if (statusMatch && userMatch) {
+      const div = document.createElement("div");
       div.setAttribute("data-key", key);
 
       if (film.status === "to_watch") {
@@ -45,7 +49,7 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
           <h3>${film.title}</h3>
           <p>🎬 ${film.director}</p>
           <p>⭐ IMDb : ${film.imdbRating}</p>
-          <p>👤 ${addedName}${currentUser?.email === film.addedBy ? " (vous)" : ""}</p>
+          <p>👤 ${addedName}${email === currentEmail ? " (vous)" : ""}</p>
           <div class="status-toggle">
             <button class="toggle-status" onclick="window.toggleStatus('${key}', '${film.status}')">
               🎯 À voir
@@ -56,7 +60,7 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
         toWatchList.appendChild(div);
       }
 
-      else if (film.status === "watched") {
+      if (film.status === "watched") {
         hasWatched = true;
         div.className = "film-card condensed fade-in";
         div.innerHTML = `
@@ -72,6 +76,6 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     }
   });
 
-  // 👁️ Affichage conditionnel de la colonne "Vu"
+  // 🕵️‍♀️ Masque ou affiche la colonne "Vu"
   watchedColumn.style.display = hasWatched ? "block" : "none";
 }
