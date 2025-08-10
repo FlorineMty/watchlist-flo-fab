@@ -71,8 +71,18 @@ onValue(ref(db, "films"), snapshot => {
 });
 
 window.toggleStatus = (key, currentStatus) => {
-  const newStatus = currentStatus === "watched" ? "to_watch" : "watched";
-  set(ref(db, `films/${key}/status`), newStatus);
+  const card = document.querySelector(`[data-key="${key}"]`);
+  if (card) {
+    card.classList.add("fade-out");
+    setTimeout(() => {
+      const newStatus = currentStatus === "watched" ? "to_watch" : "watched";
+      set(ref(db, `films/${key}/status`), newStatus);
+    }, 300);
+  } else {
+    // fallback au cas où la carte n'existe pas
+    const newStatus = currentStatus === "watched" ? "to_watch" : "watched";
+    set(ref(db, `films/${key}/status`), newStatus);
+  }
 };
 
 window.deleteFilm = (key) => {
