@@ -109,8 +109,8 @@ header h1 {
 }
 
 .film-list-column {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* 🆕 deux films par ligne */
   gap: 16px;
 }
 
