@@ -9,13 +9,19 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     const film = child.val();
     const key = child.key;
 
-    const email = film.addedBy?.toLowerCase() || '';
-    const addedName = allowedEmails[email] || "Inconnu";
+    const email = (film.addedBy || "").toLowerCase();
+    const addedName = allowedEmails[email] || email;
 
-    // ✅ Filtrage strict par email associé au prénom sélectionné
-    const expectedEmail = Object.keys(allowedEmails).find(
-      key => allowedEmails[key].toLowerCase() === userFilter
-    );
+    // 🔐 Comparaison stricte par email exact (basé sur prénom sélectionné)
+    let expectedEmail = null;
+    if (userFilter !== "all") {
+      for (const emailKey in allowedEmails) {
+        if (allowedEmails[emailKey].toLowerCase() === userFilter) {
+          expectedEmail = emailKey;
+          break;
+        }
+      }
+    }
 
     const statusMatch = statusFilter === "all" || film.status === statusFilter;
     const userMatch = userFilter === "all" || email === expectedEmail;
