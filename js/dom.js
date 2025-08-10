@@ -54,7 +54,7 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
           ${deleteButtonHTML}
         `;
         toWatchList.appendChild(div);
-      } } else if (film.status === "watched") {
+      } else if (film.status === "watched") {
       div = document.createElement("div");
       div.className = "film-card condensed";
       div.innerHTML = `
