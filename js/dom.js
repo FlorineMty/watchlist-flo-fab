@@ -12,10 +12,13 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     const film = child.val();
     const key = child.key;
 
+    // ✅ Normalize status
+    film.status = (film.status || "").toLowerCase();
+
     const email = (film.addedBy || "").toLowerCase();
     const addedName = allowedEmails[email] || email;
 
-    // Filtrage
+    // 🔍 Filtrage utilisateur
     let expectedEmail = null;
     if (userFilter !== "all") {
       expectedEmail = Object.keys(allowedEmails).find(
@@ -34,7 +37,6 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
 
       let div;
 
-      // 🎯 Films à voir : carte complète
       if (film.status === "to_watch") {
         div = document.createElement("div");
         div.className = "film-card";
@@ -52,9 +54,7 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
           ${deleteButtonHTML}
         `;
         toWatchList.appendChild(div);
-
-      // ✅ Films vus : vue condensée
-      } else {
+      } else if (film.status === "watched") {
         div = document.createElement("div");
         div.className = "film-card condensed";
         div.innerHTML = `
