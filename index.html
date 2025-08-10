@@ -38,7 +38,17 @@
       </select>
     </div>
 
-    <div id="filmGrid"></div>
+    <div id="filmGridContainer" class="film-grid-container">
+  <div class="film-column" id="toWatchColumn">
+    <h2>🎯 À voir</h2>
+    <div id="toWatchList" class="film-list-column"></div>
+  </div>
+  <div class="film-column" id="watchedColumn">
+    <h2>✅ Vu</h2>
+    <div id="watchedList" class="film-list-column"></div>
+  </div>
+</div>
+
   </main>
 
   <script type="module" src="js/app.js"></script>
