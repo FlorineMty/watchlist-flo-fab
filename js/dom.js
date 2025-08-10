@@ -8,11 +8,17 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
   snapshot.forEach(child => {
     const film = child.val();
     const key = child.key;
+
     const email = film.addedBy?.toLowerCase() || '';
     const addedName = allowedEmails[email] || "Inconnu";
 
+    // ✅ Filtrage strict par email associé au prénom sélectionné
+    const expectedEmail = Object.keys(allowedEmails).find(
+      key => allowedEmails[key].toLowerCase() === userFilter
+    );
+
     const statusMatch = statusFilter === "all" || film.status === statusFilter;
-    const userMatch = userFilter === "all" || email.includes(userFilter);
+    const userMatch = userFilter === "all" || email === expectedEmail;
 
     if (statusMatch && userMatch) {
       const isAuthorized = currentUser?.email && allowedEmails[currentUser.email];
