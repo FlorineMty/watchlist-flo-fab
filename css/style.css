@@ -147,6 +147,7 @@ header h1 {
 #googleSignInBtn {
   display: flex;
   justify-content: center;
+  border-radius: 8px;
 }
 
 @media (max-width: 600px) {
