@@ -1,24 +1,26 @@
 export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
   const toWatchList = document.getElementById("toWatchList");
   const watchedList = document.getElementById("watchedList");
+  const watchedColumn = document.getElementById("watchedColumn");
+  const toWatchColumn = document.getElementById("toWatchColumn");
 
+  // Réinitialise les contenus
   toWatchList.innerHTML = '';
   watchedList.innerHTML = '';
 
   const statusFilter = document.getElementById("statusFilter").value;
   const userFilter = document.getElementById("userFilter").value;
 
+  let hasWatchedFilms = false;
+
   snapshot.forEach(child => {
     const film = child.val();
     const key = child.key;
 
-    // ✅ Normalisation du statut (pour éviter les erreurs avec "Watched", "watched", etc.)
     film.status = (film.status || "").toLowerCase();
-
     const email = (film.addedBy || "").toLowerCase();
     const addedName = allowedEmails[email] || email;
 
-    // 🎯 Filtres
     let expectedEmail = null;
     if (userFilter !== "all") {
       expectedEmail = Object.keys(allowedEmails).find(
@@ -37,12 +39,10 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
 
       let div;
 
-      // 🎯 Carte pour films "À voir"
       if (film.status === "to_watch") {
         div = document.createElement("div");
         div.className = "film-card fade-in";
         div.setAttribute("data-key", key);
-
         div.innerHTML = `
           <img src="${film.poster}" alt="Affiche">
           <h3>${film.title}</h3>
@@ -56,15 +56,12 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
           </div>
           ${deleteButtonHTML}
         `;
-
         toWatchList.appendChild(div);
-
-      // ✅ Carte condensée pour films "Vu"
       } else if (film.status === "watched") {
+        hasWatchedFilms = true;
         div = document.createElement("div");
         div.className = "film-card condensed fade-in";
         div.setAttribute("data-key", key);
-
         div.innerHTML = `
           <h4>${film.title}</h4>
           <span>⭐ ${film.imdbRating}</span>
@@ -73,9 +70,17 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
           </button>
           ${deleteButtonHTML}
         `;
-
         watchedList.appendChild(div);
       }
     }
   });
+
+  // Affiche ou masque la colonne "Vu" selon qu'elle contient des films
+  if (hasWatchedFilms) {
+    watchedColumn.style.display = "block";
+    toWatchColumn.style.flex = "1";
+  } else {
+    watchedColumn.style.display = "none";
+    toWatchColumn.style.flex = "1 1 100%";
+  }
 }
