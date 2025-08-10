@@ -1,6 +1,9 @@
 export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
-  const grid = document.getElementById("filmGrid");
-  grid.innerHTML = '';
+  const toWatchList = document.getElementById("toWatchList");
+  const watchedList = document.getElementById("watchedList");
+
+  toWatchList.innerHTML = '';
+  watchedList.innerHTML = '';
 
   const statusFilter = document.getElementById("statusFilter").value;
   const userFilter = document.getElementById("userFilter").value;
@@ -12,15 +15,12 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
     const email = (film.addedBy || "").toLowerCase();
     const addedName = allowedEmails[email] || email;
 
-    // 🔐 Comparaison stricte par email exact (basé sur prénom sélectionné)
+    // Filtrage
     let expectedEmail = null;
     if (userFilter !== "all") {
-      for (const emailKey in allowedEmails) {
-        if (allowedEmails[emailKey].toLowerCase() === userFilter) {
-          expectedEmail = emailKey;
-          break;
-        }
-      }
+      expectedEmail = Object.keys(allowedEmails).find(
+        key => allowedEmails[key].toLowerCase() === userFilter
+      );
     }
 
     const statusMatch = statusFilter === "all" || film.status === statusFilter;
@@ -28,29 +28,42 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
 
     if (statusMatch && userMatch) {
       const isAuthorized = currentUser?.email && allowedEmails[currentUser.email];
-
       const deleteButtonHTML = isAuthorized
         ? `<button onclick="window.deleteFilm('${key}')">🗑️</button>`
         : '';
 
-      const div = document.createElement("div");
-      div.className = "film-card";
-      div.innerHTML = `
-        <img src="${film.poster}" alt="Affiche">
-        <h3>${film.title}</h3>
-        <p>🎬 ${film.director}</p>
-        <p>⭐ IMDb : ${film.imdbRating}</p>
-        <p>👤 ${addedName}${currentUser?.email === film.addedBy ? " (vous)" : ""}</p>
-        <p><strong>Statut :</strong> ${film.status === "watched" ? "✅ Vu" : "⏳ À voir"}</p>
-        <div class="status-toggle">
-          <button class="toggle-status" onclick="window.toggleStatus('${key}', '${film.status}')">
-          ${film.status === "watched" ? "✅ Vu" : "🎯 À voir"}
-          </button>
-        </div>
+      let div;
 
-        ${deleteButtonHTML}
-      `;
-      grid.appendChild(div);
+      // 🎯 Films à voir : carte complète
+      if (film.status === "to_watch") {
+        div = document.createElement("div");
+        div.className = "film-card";
+        div.innerHTML = `
+          <img src="${film.poster}" alt="Affiche">
+          <h3>${film.title}</h3>
+          <p>🎬 ${film.director}</p>
+          <p>⭐ IMDb : ${film.imdbRating}</p>
+          <p>👤 ${addedName}${currentUser?.email === film.addedBy ? " (vous)" : ""}</p>
+          <div class="status-toggle">
+            <button class="toggle-status" onclick="window.toggleStatus('${key}', '${film.status}')">
+              🎯 À voir
+            </button>
+          </div>
+          ${deleteButtonHTML}
+        `;
+        toWatchList.appendChild(div);
+
+      // ✅ Films vus : vue condensée
+      } else {
+        div = document.createElement("div");
+        div.className = "film-card condensed";
+        div.innerHTML = `
+          <h4>${film.title}</h4>
+          <span>⭐ ${film.imdbRating}</span>
+          ${deleteButtonHTML}
+        `;
+        watchedList.appendChild(div);
+      }
     }
   });
 }
