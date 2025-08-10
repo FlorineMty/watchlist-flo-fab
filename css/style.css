@@ -208,7 +208,7 @@ header h1 {
     align-items: center;
     gap: 12px;
   }
-
+  
   .main {
     padding: 10px 20px;
   }
@@ -225,3 +225,24 @@ header h1 {
     align-items: center;
   }
 }
+
+/* Animation d'apparition / disparition */
+.film-card.fade-out {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.film-card.fade-in {
+  opacity: 0;
+  transform: scale(0.95);
+  animation: fadeInScale 0.4s forwards;
+}
+
+@keyframes fadeInScale {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
