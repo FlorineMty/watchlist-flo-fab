@@ -43,11 +43,11 @@ export function renderFilmGrid(snapshot, currentUser, allowedEmails) {
         <p>👤 ${addedName}${currentUser?.email === film.addedBy ? " (vous)" : ""}</p>
         <p><strong>Statut :</strong> ${film.status === "watched" ? "✅ Vu" : "⏳ À voir"}</p>
         <div class="status-toggle">
-          <label>
-            <input type="checkbox" ${film.status === "watched" ? "checked" : ""} onchange="window.toggleStatus('${key}', '${film.status}')">
-            Marquer comme vu
-          </label>
+          <button class="toggle-status" onclick="window.toggleStatus('${key}', '${film.status}')">
+          ${film.status === "watched" ? "✅ Vu" : "🎯 À voir"}
+          </button>
         </div>
+
         ${deleteButtonHTML}
       `;
       grid.appendChild(div);
