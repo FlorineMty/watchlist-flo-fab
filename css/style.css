@@ -96,6 +96,45 @@ header h1 {
   padding: 20px;
 }
 
+.film-grid-container {
+  display: flex;
+  gap: 40px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.film-column {
+  flex: 1;
+  min-width: 300px;
+}
+
+.film-list-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.film-card.condensed {
+  background: #f4f4f4;
+  padding: 12px;
+  border-left: 4px solid #4caf50;
+  box-shadow: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.film-card.condensed h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.film-card.condensed span {
+  font-size: 0.9rem;
+  color: #555;
+}
+
 .film-card {
   background: #fff;
   border-radius: 16px;
