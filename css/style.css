@@ -246,3 +246,18 @@ header h1 {
   }
 }
 
+.site-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-img {
+  height: 60px;
+  width: auto;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+
